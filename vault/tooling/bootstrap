@@ -8,11 +8,9 @@ helm repo update
 
 kubectl create namespace vault || true
 
-project_path="$(git rev-parse --show-toplevel)"
-
 # vault
 echo -e "\nDeploying vault..."
-vault_dir="${project_path}/vault/vault"
+vault_dir="$(dirname $0)/../vault"
 
 # Replace secrets
 sed -i "s|<path:secret/data/infra#domain>|${DOMAIN}|" "${vault_dir}"/values.yaml

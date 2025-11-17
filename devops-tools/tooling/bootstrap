@@ -8,11 +8,9 @@ helm repo update
 
 kubectl create namespace devops-tools || true
 
-project_path="$(git rev-parse --show-toplevel)"
-
 # argocd
 echo -e "\nDeploying argocd..."
-argocd_dir="${project_path}/devops-tools/argocd"
+argocd_dir="$(dirname $0)/../argocd"
 
 # Replace secrets
 sed -i "s|<path:secret/data/infra#domain>|${DOMAIN}|" "${argocd_dir}"/values.yaml
