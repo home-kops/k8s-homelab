@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# First unseal the vault
+# kubectl -n vault exec -it vault-0 -- vault operator unseal <key1> && \
+#   kubectl -n vault exec -it vault-0 -- vault operator unseal <key2> && \
+#   kubectl -n vault exec -it vault-0 -- vault operator unseal <key3>
+
 # Required environment variables:
 # - ADMIN_PASSWORD: The password for the admin user in Vault.
 # - VAULT_TOKEN: The token for authenticating with Vault.
