@@ -84,7 +84,7 @@ spec:
     - Use Ingress to consolidate routing rules and manage TLS termination.
     - Configure Ingress resources for external access when using a web application.
     - Specify host, path, and backend service.
-    - Use the Traefik ingress class when possible 
+    - Use the Traefik IngressRoute when possible 
 - **Example (Ingress):**
 ```yaml
 apiVersion: networking.k8s.io/v1
