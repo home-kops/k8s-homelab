@@ -37,7 +37,7 @@ datasources:
       jsonData:
         httpHeaderName1: 'X-Scope-OrgID'
       secureJsonData:
-        httpHeaderValue1: 'krieg'
+        httpHeaderValue1: 'homelab'
     - name: Tempo
       type: tempo
       uid: tempo

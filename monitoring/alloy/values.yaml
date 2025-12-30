@@ -19,7 +19,7 @@ alloy:
       loki.write "default" {
         endpoint {
           url       = "http://loki:3100/loki/api/v1/push"
-          tenant_id = "krieg"
+          tenant_id = "homelab"
         }
       }
 

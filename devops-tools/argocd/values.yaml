@@ -5,7 +5,7 @@ configs:
   params:
     server.insecure: true
   clusterCredentials:
-    krieg:
+    homelab:
       server: https://kubernetes.default.svc
       config:
         tlsClientConfig:

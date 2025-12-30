@@ -34,7 +34,7 @@ falcosidekick:
   config:
     loki:
       hostport: http://loki.monitoring:3100
-      customheaders: "X-Scope-OrgID:krieg"
+      customheaders: "X-Scope-OrgID:homelab"
       extralabels: "from"
       grafanaDashboard:
         enabled: false
