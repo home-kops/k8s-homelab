@@ -78,7 +78,7 @@ repoServer:
     emptyDir: {}
   initContainers:
   - name: download-tools
-    image: alpine:3.22
+    image: alpine:3.23
     command: [sh, -c]
     env:
     - name: AVP_VERSION
