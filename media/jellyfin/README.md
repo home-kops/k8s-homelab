@@ -1,172 +1,76 @@
 # Jellyfin
 
-Free media streaming server for your personal movies, TV shows, music, and photos.
-
-## What is Jellyfin?
-
-Jellyfin is like running your own Netflix or Spotify. It organizes your media library, transcodes video formats, and streams content to any device with a web browser or Jellyfin app.
-
-## What it does
-
-- **Media management**: Organizes movies, TV shows, music, and photos
-- **Metadata fetching**: Automatically downloads posters, descriptions, and info
-- **Transcoding**: Converts media formats for different devices on-the-fly
-- **Multi-device streaming**: Watch on phones, tablets, smart TVs, web browsers
-- **User management**: Create accounts for family members with different permissions
-- **Resume playback**: Continue watching from where you left off
-- **Remote access**: Stream your media anywhere (with proper security)
-
-## Features
-
-- **No subscriptions**: Completely free, no paid tiers
-- **No ads**: Pure media streaming experience
-- **Format support**: Plays almost any video/audio format
-- **Subtitle support**: Automatic subtitle download and customization
-- **Live TV & DVR**: With additional hardware (TV tuner)
-- **Plugins**: Extend functionality with community plugins
-
-## How to use it
-
-### Accessing Jellyfin
-
-Access through your configured ingress URL (e.g., `https://jellyfin.yourdomain.com`)
-
-### Initial Setup
-
-1. Create an admin account on first launch
-2. Add media libraries (Movies, TV Shows, Music, etc.)
-3. Point each library to your media storage location
-4. Jellyfin scans and organizes your media
-5. Create user accounts for family/friends
-
-### Adding Media
-
-Media should be organized following Jellyfin's naming conventions:
-
-```
-Movies/
-  ├── Movie Name (2020)/
-  │   └── Movie Name (2020).mkv
-  └── Another Movie (2021)/
-      └── Another Movie (2021).mp4
-
-TV Shows/
-  └── Show Name/
-      ├── Season 01/
-      │   ├── Show Name - S01E01.mkv
-      │   └── Show Name - S01E02.mkv
-      └── Season 02/
-          └── Show Name - S02E01.mkv
-```
+Media server for organizing and streaming personal media libraries.
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Container Image
 
-Key settings:
+**LinuxServer.io Jellyfin image**: [ghcr.io/linuxserver/jellyfin](https://github.com/linuxserver/docker-jellyfin)
+
+### Storage
+
+**Dual storage strategy:**
+
+1. **Configuration PVC** (10Gi on `nfs-sc`):
+   - Stores Jellyfin metadata, settings, library database
+   - Persistent across pod restarts
+
+2. **NFS Media Mount**:
+   ```yaml
+   nfs: <path:secret/data/infra#nfs>
+   ```
+   - Direct mount to shared media library
+   - NFS server IP resolved from Vault
+   - Read-only access to prevent accidental modifications
+
+### Automated Backups
+
+CronJob backs up configuration daily:
 ```yaml
-deployment:
-  image:
-    repository: jellyfin/jellyfin
-    tag: latest
-  replicas: 1
-  
-  volumes:
-    - name: media
-      nfs:
-        server: your-nfs-server
-        path: /mnt/media
-    - name: config
-      persistentVolumeClaim:
-        claimName: jellyfin-config
+schedule: "0 15 * * *"  # 3 PM daily
+```
+Retention: 3 days
+
+## Resources
+
+- **CPU**: Not explicitly limited
+- **Memory**: Not explicitly limited
+- **Storage**: 10Gi PVC + NFS mount
+- **Node Selector**: `size: m` (medium nodes)
+
+## Access
+
+**IngressRoute**: `https://jellyfin.{{ .Values.domain }}`
+
+Domain resolved from Vault: `<path:secret/data/infra#domain>`
+
+## References
+
+- [Jellyfin Documentation](https://jellyfin.org/docs/)
+- [LinuxServer.io Jellyfin Image](https://docs.linuxserver.io/images/docker-jellyfin)
+```
+https://jellyfin.<your-domain>
 ```
 
-### Hardware Acceleration
+The IngressRoute is defined in [templates/ingressroute.yaml](./templates/ingressroute.yaml) with automatic TLS.
 
-For better transcoding performance, enable hardware acceleration:
+## Resource Scheduling
 
+Deployed to medium-sized nodes:
 ```yaml
-securityContext:
-  privileged: true  # Required for GPU access
-
-# Add device mounts for GPU
-volumeMounts:
-  - name: gpu
-    mountPath: /dev/dri
+nodeSelector:
+  size: m
 ```
 
-## Storage Requirements
-
-- **Config**: ~1-2GB for Jellyfin configuration and metadata
-- **Media**: Depends on your library size (typically hundreds of GB to TBs)
-- **Transcoding**: Temporary storage for transcoded files
-
-## Client Applications
-
-- **Web**: Access directly through browser
-- **Android/iOS**: Official Jellyfin apps
-- **Android TV**: App available on Play Store
-- **Roku**: Jellyfin channel
-- **Smart TVs**: Apps for Samsung, LG, etc.
-- **Desktop**: Windows, Mac, Linux applications
-
-## Transcoding
-
-Jellyfin transcodes media when:
-- Device doesn't support the original format
-- Network bandwidth is limited
-- You manually select a lower quality
-
-Transcoding is CPU/GPU intensive. For best performance:
-- Enable hardware acceleration (Intel QuickSync, NVIDIA, AMD)
-- Store original media in widely-compatible formats (H.264/AAC)
-- Upgrade server hardware if experiencing lag
+Jellyfin needs sufficient CPU/RAM for:
+- Metadata processing
+- Library scanning
+- Potential transcoding (if hardware acceleration unavailable)
 
 ## Deployment
 
-Deployed by ArgoCD. Configuration in this directory.
-
-## Ingress Configuration
-
-Example IngressRoute in [templates/ingressroute.yaml](./templates/ingressroute.yaml):
-
-```yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: jellyfin
-spec:
-  entryPoints:
-    - websecure
-  routes:
-    - match: Host(`jellyfin.example.com`)
-      kind: Rule
-      services:
-        - name: jellyfin
-          port: 8096
-  tls:
-    certResolver: letsencrypt
-```
-
-## Security Considerations
-
-- **Authentication**: Enable user authentication, don't allow anonymous access
-- **HTTPS**: Always use HTTPS for remote access
-- **User permissions**: Limit what users can delete or modify
-- **Network security**: Consider VPN for remote access instead of exposing publicly
-- **Regular updates**: Keep Jellyfin updated for security patches
-
-## Troubleshooting
-
-**Can't access Jellyfin**: Check ingress configuration, verify pod is running
-
-**Media not appearing**: Check file permissions, verify media paths, trigger library scan
-
-**Buffering/lag**: Enable hardware acceleration, check network bandwidth, reduce quality
-
-**Transcoding fails**: Check Jellyfin logs, verify hardware acceleration is working
-
-**High CPU usage**: Transcoding is intensive, enable hardware acceleration or reduce concurrent streams
+Managed by ArgoCD. Changes to values.yaml are automatically synced to the cluster.
 
 ## Monitoring
 
@@ -174,12 +78,28 @@ Check Jellyfin status:
 ```bash
 kubectl get pods -n media -l app=jellyfin
 kubectl logs -n media -l app=jellyfin
+kubectl get pvc -n media
 ```
 
-Monitor transcoding and streaming in Jellyfin's web dashboard.
+Check backup CronJob:
+```bash
+kubectl get cronjob -n media
+kubectl get jobs -n media | grep backup
+```
 
-## Resources
+## Troubleshooting
 
-- Official docs: https://jellyfin.org/docs/
-- Naming guide: https://jellyfin.org/docs/general/server/media/movies.html
-- Hardware acceleration: https://jellyfin.org/docs/general/administration/hardware-acceleration.html
+**Pod not starting:**
+- Check PVC is bound: `kubectl get pvc -n media`
+- Verify NFS server is accessible
+- Check node selector matches available nodes
+
+**Can't access media:**
+- Verify NFS mount is working
+- Check file permissions on NFS share
+- Ensure PUID/PGID match NFS file ownership
+
+**Slow performance:**
+- Transcoding without hardware acceleration is CPU-intensive
+- Check resource limits
+- Consider enabling GPU passthrough for transcoding

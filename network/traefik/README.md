@@ -1,97 +1,61 @@
 # Traefik
 
-Traefik is a modern reverse proxy and ingress controller that routes incoming traffic to your applications.
+Ingress controller routing external HTTP/HTTPS traffic to cluster services.
 
-## What is Traefik?
+## Deployment
 
-Traefik acts as the front door to your Kubernetes cluster. When someone visits `https://jellyfin.yourdomain.com`, Traefik receives that request and forwards it to the Jellyfin service inside your cluster.
+**Manually bootstrapped** via [tooling/bootstrap](../tooling/bootstrap) script.
 
-## What it does
-
-- **HTTP/HTTPS Routing**: Routes requests to services based on domain names and paths
-- **TLS Termination**: Handles HTTPS certificates (provided by cert-manager)
-- **Load Balancing**: Distributes traffic across multiple pod replicas
-- **Automatic Service Discovery**: Automatically finds new services in Kubernetes
-- **Middleware**: Add authentication, rate limiting, redirects, etc.
-- **Dashboard**: Web UI to monitor traffic and routing rules
-
-## How it works
-
-1. External request arrives at your cluster's IP (provided by MetalLB)
-2. Traefik receives the request
-3. Traefik checks the request's hostname/path against routing rules (IngressRoutes)
-4. Traefik forwards the request to the matching service
-5. The service responds through Traefik back to the client
+Dual Helm chart pattern:
+1. Official Traefik chart ([traefik-values.yaml](./traefik-values.yaml))
+2. Local templates for CrowdSec bouncer ([templates/](./templates/))
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Domain
 
-Key settings:
-- Entry points (ports: 80 for HTTP, 443 for HTTPS)
-- TLS configuration
-- Dashboard access
-- Resource limits
-- Integration with CrowdSec bouncer
-
-## Creating Routes
-
-Applications define IngressRoute resources to expose themselves:
-
+Cluster domain from Vault:
 ```yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: my-app
-spec:
-  entryPoints:
-    - websecure  # HTTPS
-  routes:
-    - match: Host(`myapp.example.com`)
-      kind: Rule
-      services:
-        - name: my-app-service
-          port: 8080
-  tls:
-    certResolver: letsencrypt  # Automatic certificate
+domain: <path:secret/data/infra#k8s_domain>
 ```
 
-## Middleware
+### CrowdSec Bouncer Middleware
 
-Add features to routes using middleware:
-
+Protects ingress routes ([templates/bouncer.yaml](./templates/bouncer.yaml)):
 ```yaml
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: basic-auth
+  name: crowdsec-bouncer
 spec:
-  basicAuth:
-    secret: auth-secret
-
----
-# Reference middleware in IngressRoute
-spec:
-  routes:
-    - match: Host(`secure.example.com`)
-      middlewares:
-        - name: basic-auth
-      services:
-        - name: my-service
-          port: 80
+  plugin:
+    bouncer:
+      crowdsecLapiKey: <path:secret/data/monitoring/crowdsec#traefik_bouncer_key>
 ```
 
-## Common Middleware
+Apply to IngressRoutes:
+```yaml
+middlewares:
+  - name: crowdsec-bouncer
+```
 
-- **basicAuth**: Password protection
-- **redirectScheme**: HTTP to HTTPS redirect
-- **rateLimit**: Limit requests per IP
-- **ipWhiteList**: Restrict access by IP
-- **headers**: Modify request/response headers
+### LoadBalancer Service
 
-## Accessing the Dashboard
+Receives IP `192.168.10.99` from MetalLB.
 
-Traefik's dashboard shows all routes and traffic statistics. Configure access in `values.yaml` or create an IngressRoute:
+## Resources
+
+- **CPU**: 100m requests, 300m limits
+- **Memory**: 50Mi requests, 150Mi limits
+
+## Access
+
+External traffic → `192.168.10.99:80/443` → Traefik → Services
+
+## References
+
+- [Traefik Documentation](https://doc.traefik.io/traefik/)
+- [Helm Chart](https://github.com/traefik/traefik-helm-chart)
 
 ```yaml
 apiVersion: traefik.containo.us/v1alpha1

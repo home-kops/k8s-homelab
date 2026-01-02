@@ -1,169 +1,74 @@
 # Cert-Manager
 
-This directory contains the cert-manager deployment configuration for automated TLS certificate management using Cloudflare DNS-01 challenge.
+Automated TLS certificate management using Let's Encrypt and Cloudflare DNS-01 challenge.
 
-## Our Deployment Approach
+## Deployment
 
-We deploy cert-manager using a **dual Helm chart pattern** with Kustomize:
+**Manually bootstrapped** via [tooling/bootstrap](../tooling/bootstrap) script.
 
-1. **Official cert-manager Helm chart** - The base cert-manager installation
-2. **Local wrapper Helm chart** - Our custom resources (issuers, certificates, secrets)
+Dual Helm chart pattern:
+1. Official cert-manager chart ([cert-manager-values.yaml](./cert-manager-values.yaml))
+2. Local chart with custom resources ([templates/](./templates/))
 
-See [kustomization.yaml](./kustomization.yaml):
+## Configuration
+
+### Wildcard Certificate
+
+Single certificate for entire domain:
 ```yaml
-helmCharts:
-- name: cert-manager              # Official chart
-  repo: https://charts.jetstack.io
-  version: v1.19.2
-  namespace: network
-  valuesFile: cert-manager-values.yaml
-  
-- name: certmanager               # Our local chart
-  namespace: network
-  valuesFile: values.yaml          # Values with Vault placeholders
+dnsNames:
+  - {{ .Values.domain }}
+  - "*.{{ .Values.domain }}"
 ```
 
-This approach allows us to:
-- Deploy the official cert-manager with custom resource configurations
-- Use Vault for secrets (API tokens, email) via ArgoCD's Vault plugin
-- Keep certificate resources in sync with the installation
+Stored as `domain-tls-secret` in `network` namespace.
 
-## Wildcard Certificate Strategy
-
-Instead of requesting individual certificates for each service, we issue a **single wildcard certificate** for the entire domain.
-
-### Why Wildcard?
-
-1. **Simplicity**: One certificate covers all subdomains (`*.yourdomain.com`)
-2. **Rate limits**: Avoid Let's Encrypt's per-domain rate limits
-3. **Replication**: Share the certificate across all namespaces using Replicator
-4. **Centralized management**: One certificate to monitor and renew
-
-### The Certificate
-
-See [templates/certificate.yaml](./templates/certificate.yaml):
+Replicated to all namespaces:
 ```yaml
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: domain
-  namespace: network
-spec:
-  secretName: domain-tls-secret
-  commonName: {{ .Values.domain }}
-  issuerRef:
-    name: letsencrypt-production
-    kind: ClusterIssuer
-  dnsNames:
-  - {{ .Values.domain }}              # yourdomain.com
-  - "*.{{ .Values.domain }}"          # *.yourdomain.com
-  secretTemplate:
-    annotations:
-      # Replicator annotations for cross-namespace sharing
-      replicator.v1.mittwald.de/replication-allowed: "true"
-      replicator.v1.mittwald.de/replication-allowed-namespaces: "*"
-      replicator.v1.mittwald.de/replicate-to: "*"
+secretTemplate:
+  annotations:
+    replicator.v1.mittwald.de/replicate-to: "*"
 ```
 
-**Flow:**
-1. Cert-manager requests a wildcard cert from Let's Encrypt
-2. Certificate is stored as `domain-tls-secret` in the `network` namespace
-3. Replicator automatically copies the secret to all namespaces
-4. All services can reference `domain-tls-secret` for TLS
+### Cloudflare DNS-01
 
-## DNS-01 Challenge with Cloudflare
-
-We use **DNS-01 challenge** instead of HTTP-01 because:
-- ✅ Required for wildcard certificates
-- ✅ Works without exposing port 80 externally
-- ✅ No ingress routing needed during challenge
-- ✅ Works even if services are down
+API token from Vault:
+```yaml
+cloudflareApiToken: <path:secret/data/infra#cloudflare_api_token>
+```
 
 ### ClusterIssuers
 
-We configure two issuers in [templates/issuer.yaml](./templates/issuer.yaml):
+Two Let's Encrypt issuers:
+- `letsencrypt-staging`
+- `letsencrypt-production`
 
-**Staging (for testing):**
+Email from Vault:
 ```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-staging
-spec:
-  acme:
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: {{ .Values.letsEncryptEmail }}
-    privateKeySecretRef:
-      name: letsencrypt-staging
-    solvers:
-    - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            name: cert-manager-secrets
-            key: api-token
+letsEncryptEmail: <path:secret/data/infra#letsencrypt_email>
 ```
 
-**Production (for real certs):**
+### Traefik Default Certificate
+
+TLSStore configures Traefik default:
 ```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-production
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: {{ .Values.letsEncryptEmail }}
-    privateKeySecretRef:
-      name: letsencrypt-production
-    solvers:
-    - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            name: cert-manager-secrets
-            key: api-token
+defaultCertificate:
+  secretName: domain-tls-secret
 ```
 
-**Challenge flow:**
-1. Cert-manager creates a TXT record: `_acme-challenge.yourdomain.com`
-2. Let's Encrypt queries DNS to verify the record
-3. Certificate is issued once verification succeeds
-4. TXT record is automatically cleaned up
+## Resources
 
-### Cloudflare API Token
+Default Helm chart allocations.
 
-The Cloudflare API token is stored in [templates/secret.yaml](./templates/secret.yaml):
+## Dependencies
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: cert-manager-secrets
-  namespace: network
-type: Opaque
-stringData:
-  api-token: {{ .Values.apiToken }}
-```
+- Replicator
+- Cloudflare DNS
 
-The `apiToken` value comes from [values.yaml](./values.yaml):
-```yaml
-apiToken: <path:secret/data/network/certmanager#apiToken>
-```
+## References
 
-This Vault placeholder is resolved by ArgoCD's Vault plugin during deployment.
-
-**Required Cloudflare token permissions:**
-- Zone - DNS - Edit
-- Zone - Zone - Read
-
-## Traefik Default Certificate
-
-We configure Traefik to use our wildcard certificate as the **default certificate** for all HTTPS connections.
-
-See [templates/tlsstore.yaml](./templates/tlsstore.yaml):
-```yaml
-apiVersion: traefik.io/v1alpha1
-kind: TLSStore
-metadata:
+- [Cert-Manager Documentation](https://cert-manager.io/docs/)
+- [Helm Chart](https://github.com/cert-manager/cert-manager/tree/master/deploy/charts/cert-manager)
   name: default
   namespace: default
 spec:

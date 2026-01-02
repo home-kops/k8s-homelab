@@ -1,102 +1,50 @@
 # Vault Unsealer
 
-Automated service that unseals HashiCorp Vault after restarts or reboots.
+Automated service unsealing HashiCorp Vault after restarts.
 
-## What is the Vault Unsealer?
+## Deployment
 
-When Vault starts, it's "sealed" - encrypted and inaccessible. To use Vault, it must be "unsealed" using unseal keys. The vault-unsealer automates this process so you don't have to manually unseal Vault every time it restarts.
+**Manually bootstrapped** via [tooling/bootstrap](../tooling/bootstrap) script.
 
-## Why is this needed?
-
-Vault seals itself for security:
-- When Vault starts
-- After a pod restart
-- After a node reboot
-- After any interruption
-
-Unsealing requires entering 3 out of 5 unseal keys (by default). Doing this manually every time is impractical, so the unsealer automates it.
-
-## What it does
-
-- **Monitors Vault**: Checks if Vault is sealed
-- **Automatic unsealing**: Unseals Vault using stored unseal keys
-- **Runs on schedule**: CronJob that runs periodically (e.g., every 5 minutes)
-- **Handles restarts**: Ensures Vault is always available
-
-## How it works
-
-1. CronJob triggers every few minutes
-2. Unsealer checks Vault's seal status
-3. If sealed, it retrieves unseal keys from a Kubernetes secret
-4. It calls Vault's unseal API with the keys
-5. Vault unseals and becomes operational
-
-## Security Considerations
-
-The unsealer stores unseal keys as a Kubernetes secret. This is a trade-off:
-- **Pro**: Vault automatically unseals, improving availability
-- **Con**: Unseal keys are accessible in the cluster
-
-For maximum security (less availability):
-- Don't use the unsealer
-- Manually unseal Vault when needed
-- Store unseal keys in a hardware security module (HSM)
-
-For homelab (more availability):
-- Use the unsealer with encrypted secrets
-- Secure cluster access with RBAC
-- Regularly rotate unseal keys
+Local Helm chart as CronJob:
+- [cronjob.yaml](./templates/cronjob.yaml)
+- [secret.yaml](./templates/secret.yaml)
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
-
-Key settings:
-```yaml
-cronjob:
-  schedule: "*/5 * * * *"    # Run every 5 minutes
-  image:
-    repository: vault
-    tag: latest
-```
-
-The unseal keys secret: [templates/secret.yaml](./templates/secret.yaml)
+### Vault Connection
 
 ```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: vault-unseal-keys
-type: Opaque
-stringData:
-  key1: <path:secret/data/vault/unseal-keys#key1>
-  key2: <path:secret/data/vault/unseal-keys#key2>
-  key3: <path:secret/data/vault/unseal-keys#key3>
+vault:
+  server: http://vault:8200
 ```
 
-## Initial Setup
+### Unseal Keys
 
-After initializing Vault for the first time:
+Three unseal keys from Vault:
+```yaml
+vault:
+  key1: <path:secret/data/vault/unsealer#key1>
+  key2: <path:secret/data/vault/unsealer#key2>
+  key3: <path:secret/data/vault/unsealer#key3>
+```
 
-1. **Initialize Vault** (if not already done):
-   ```bash
-   kubectl exec -n vault vault-0 -- vault operator init
-   ```
-   
-   Save the 5 unseal keys and root token securely.
+### Container Image
 
-2. **Store unseal keys in Vault** (circular dependency solved by manual first unseal):
-   ```bash
-   kubectl exec -n vault vault-0 -- vault kv put secret/vault/unseal-keys \
-     key1=<unseal-key-1> \
-     key2=<unseal-key-2> \
-     key3=<unseal-key-3>
-   ```
+[hashicorp/vault](https://hub.docker.com/r/hashicorp/vault)
 
-3. **Deploy unsealer**: ArgoCD deploys it, or manually:
-   ```bash
-   kubectl apply -k vault/unsealer/
-   ```
+## Resources
+
+Default allocations.
+
+## Dependencies
+
+- Vault
+
+## References
+
+- [Vault Seal/Unseal Documentation](https://developer.hashicorp.com/vault/docs/concepts/seal)
+- [Vault CLI](https://developer.hashicorp.com/vault/docs/commands)
 
 ## How Unsealing Works
 

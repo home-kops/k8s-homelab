@@ -1,88 +1,99 @@
 # Renovate
 
-Renovate automatically keeps your dependencies up to date by creating pull requests when new versions are available.
-
-## What is Renovate?
-
-Think of Renovate as your automated maintenance assistant. It regularly checks all your container images and Helm charts, finds when new versions are released, and creates pull requests with the updates.
-
-## What it does
-
-- **Scans manifests**: Finds all container image references and Helm chart versions
-- **Checks for updates**: Queries container registries and Helm repositories for newer versions
-- **Creates PRs**: Automatically creates pull requests with version updates
-- **Smart scheduling**: Can be configured to create PRs on specific days/times
-- **Grouping**: Groups related updates together (e.g., all monitoring stack updates)
-
-## How it works
-
-1. Renovate runs on a schedule (e.g., daily)
-2. It scans all YAML files in the repository
-3. For each container image or Helm chart, it checks for newer versions
-4. If updates are found, it creates a pull request with:
-   - Updated version numbers
-   - Release notes from the new version
-   - Links to changelogs
-5. You review the PR, test if needed, and merge
-6. ArgoCD automatically deploys the updates
-
-## Benefits
-
-- **Never miss security updates**: Get notified immediately about new releases
-- **Reduce manual work**: No more manually checking for updates
-- **Consistent updates**: All components follow the same update process
-- **Visibility**: See all available updates in one place
+Automated dependency update tool managing container images and Helm charts.
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Execution Schedule
 
-Key settings:
-- Schedule: When to check for updates
-- Repository configuration: Which repository to monitor
-- Auto-merge rules: Automatically merge certain updates (e.g., patch versions)
-- Package rules: Custom behavior for specific dependencies
+**Hourly CronJob**:
+```yaml
+mendRnvCronJobSchedulerAll: '0 * * * *'
+```
+Checks for updates every hour at minute 0.
 
-## Example Configuration
+### Kubernetes File Scanning
+
+Scans **all YAML files** for container images and Helm chart versions:
+```yaml
+config: |
+  module.exports = {
+    "kubernetes": {
+      "fileMatch": ["\\.yaml$"]
+    }
+  }
+```
+
+Detects images in Deployments, StatefulSets, DaemonSets, init containers, and sidecars.
+
+## Resources
+
+- **Memory**: 4Gi limit (configured in values.yaml)
+- Other resources: Default Helm chart values
+
+## Dependencies
+
+Requires GitHub App installation on target repositories.
+
+## References
+
+- [Renovate Documentation](https://docs.renovatebot.com/)
+- [Mend Renovate CE](https://github.com/mend/renovate-ce-ee)
+- [Helm Chart](https://mend.github.io/renovate-ce-ee/)
+- Update policies
+
+## Web Interface
+
+`https://renovate.yourdomain.com`
+
+The dashboard shows:
+- Repository sync status
+- Recent job runs
+- Pull request statistics
+- Error logs
+
+## Resource Allocation
+
+Renovate is configured with specific resource limits and runs on small-sized nodes:
 
 ```yaml
-# renovate.json at repository root
-{
-  "extends": ["config:base"],
-  "kubernetes": {
-    "fileMatch": [".*\\.yaml$"]
-  },
-  "schedule": ["after 10pm every weekday"],
-  "automerge": true,
-  "automergeType": "pr",
-  "packageRules": [
-    {
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
-    }
-  ]
-}
+# From values.yaml
+resources:
+  requests:
+    cpu: 250m
+    memory: 2Gi
+  limits:
+    cpu: 1000m
+    memory: 4Gi
+
+nodeSelector:
+  size: s
 ```
+
+Renovate can be resource-intensive when scanning large repositories with many dependencies. The 4Gi memory limit prevents OOM issues during scanning.
 
 ## Deployment
 
-Renovate is deployed by ArgoCD after the initial bootstrap.
-
-Ensure your repository is configured in `values.yaml` and credentials for accessing the repository are provided.
-
-## Reviewing Updates
-
-When Renovate creates a PR:
-1. Review the changelog/release notes
-2. Check if the update requires configuration changes
-3. Test in a non-production environment if possible
-4. Merge the PR
-5. ArgoCD automatically deploys the update
+Renovate is deployed by ArgoCD after the initial DevOps tools bootstrap.
 
 ## Troubleshooting
 
-**No PRs being created**: Check Renovate logs, verify repository access credentials
+**No PRs being created:**
+- Check CronJob is running: `kubectl get cronjob -n devops-tools`
+- Review Renovate logs for errors
+- Verify GitHub App has correct permissions
+- Check repository is detected in Renovate dashboard
 
-**Too many PRs**: Adjust scheduling or grouping rules in `renovate.json`
+**Authentication errors:**
+- Verify GitHub App is installed on the repository
+- Check app ID and private key in Vault are correct
+- Ensure token has not expired
 
-**Updates failing**: Some updates may require manual intervention (breaking changes)
+**High memory usage:**
+- Increase memory limits in values.yaml
+- Reduce scan frequency if scanning many large repositories
+
+**Updates not merged:**
+- Renovate creates PRs but doesn't auto-merge by default
+- Configure auto-merge rules in renovate.json if desired
+- PRs must be manually reviewed and merged

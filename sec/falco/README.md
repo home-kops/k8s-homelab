@@ -1,59 +1,68 @@
 # Falco
 
-Runtime security monitoring system that detects unexpected behavior in your Kubernetes cluster.
-
-## What is Falco?
-
-Falco is a security watchdog for your cluster. It monitors system calls and Kubernetes events in real-time, alerting you when something suspicious happens - like a container trying to access sensitive files or spawn an unexpected shell.
-
-## What it does
-
-- **Runtime threat detection**: Monitors running containers for malicious activity
-- **System call monitoring**: Watches kernel-level events
-- **Kubernetes audit**: Monitors K8s API server events
-- **Anomaly detection**: Detects unusual behavior patterns
-- **Alerting**: Sends notifications when threats are detected
-- **Compliance**: Helps meet security compliance requirements
-
-## Why you need it
-
-Kubernetes can run untrusted or compromised containers. Falco detects:
-- ✅ Shells spawned in containers (potential compromise)
-- ✅ Sensitive file access (/etc/passwd, SSH keys)
-- ✅ Privilege escalation attempts
-- ✅ Unexpected network connections
-- ✅ Container escape attempts
-- ✅ Crypto mining activity
-- ✅ Suspicious K8s API calls
-
-## How it works
-
-1. Falco runs as a DaemonSet (one pod per node)
-2. It loads a kernel module or uses eBPF to monitor system calls
-3. It applies rules to detect suspicious patterns
-4. When a rule matches, Falco generates an alert
-5. Alerts are sent to configured outputs (logs, Slack, etc.)
+Runtime security monitoring detecting suspicious behavior in cluster.
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Deployment Mode
 
-Key settings:
+**DaemonSet** on all nodes including control plane.
+
+### Falcosidekick Integration
+
+Routes security alerts to multiple outputs:
+```yaml
+falcosidekick:
+  enabled: true
+  webui:
+    enabled: true
+```
+
+**Web UI**: `https://falco.{{ .Values.domain }}`
+
+### Loki Integration
+
+Forwards alerts (priority `notice`+) to Loki:
+```yaml
+config:
+  loki:
+    hostport: "http://loki.monitoring:3100"
+    minimumpriority: "notice"
+```
+
+### eBPF Driver
+
+Uses **modern_ebpf** driver (no kernel module required):
 ```yaml
 driver:
-  kind: ebpf  # or module
-  
-falco:
-  rules_file:
-    - /etc/falco/falco_rules.yaml
-    - /etc/falco/rules.d
-    
-  json_output: true
-  log_level: info
-  
-  outputs:
-    rate: 1
-    max_burst: 1000
+  kind: modern_ebpf
+```
+
+### Control Plane Monitoring
+
+Tolerations allow running on control plane nodes:
+```yaml
+tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+```
+
+## Resources
+
+Default Helm chart resource allocations.
+
+## Access
+
+**Falcosidekick Web UI**: `https://falco.{{ .Values.domain }}`
+
+## Dependencies
+
+- **Loki**: Stores security alerts
+
+## References
+
+- [Falco Documentation](https://falco.org/docs/)
+- [Helm Chart](https://github.com/falcosecurity/charts/tree/master/charts/falco)
 ```
 
 ## Falco Rules

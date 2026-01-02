@@ -1,42 +1,18 @@
 # HashiCorp Vault
 
-Centralized secrets management system for securely storing and accessing sensitive data.
+Centralized secrets management for storing and accessing sensitive data.
 
-## What is Vault?
+## Deployment
 
-Vault is a secure storage system for secrets like passwords, API keys, and certificates. Instead of hardcoding secrets in your manifests or storing them as plain text, Vault encrypts and manages them centrally.
+**Manually bootstrapped** via [tooling/bootstrap](../tooling/bootstrap) script.
 
-## What it does
-
-- **Secure storage**: Encrypts secrets at rest
-- **Dynamic secrets**: Generate temporary credentials on-demand
-- **Access control**: Fine-grained policies for who can access what
-- **Audit logging**: Track all secret access
-- **Secret rotation**: Automatically rotate credentials
-- **Multiple backends**: Support for databases, cloud providers, SSH, etc.
-
-## How it works
-
-1. Vault starts in a "sealed" state (encrypted and inaccessible)
-2. It must be "unsealed" using unseal keys (handled automatically by vault-unsealer)
-3. Applications authenticate to Vault (using Kubernetes service accounts)
-4. Applications request secrets they need
-5. Vault checks policies to ensure the app is authorized
-6. Vault returns the secret
-7. All access is logged for audit
-
-## Architecture
-
-- **Sealed/Unsealed**: Vault starts sealed, must be unsealed to access secrets
-- **Storage backend**: File storage (in this setup), could be etcd, Consul, etc.
-- **Unseal keys**: Required to decrypt the vault (stored securely by unsealer)
-- **Root token**: Master key for initial configuration
+Deployed via **official Helm chart** `hashicorp/vault` in **standalone mode** ([kustomization.yaml](./kustomization.yaml)).
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Storage Backend
 
-Key settings:
+**File storage** with 8Gi NFS PVC:
 ```yaml
 server:
   standalone:
@@ -44,10 +20,51 @@ server:
       storage "file" {
         path = "/vault/data"
       }
-      listener "tcp" {
-        address     = "0.0.0.0:8200"
-        tls_disable = 1
-      }
+  dataStorage:
+    size: 8Gi
+    storageClass: nfs-sc
+```
+
+### Listener
+
+TLS disabled for internal cluster communication:
+```yaml
+listener "tcp" {
+  address     = "0.0.0.0:8200"
+  tls_disable = 1
+}
+```
+
+### UI
+
+Web UI enabled:
+```yaml
+ui = true
+```
+
+### Unsealing
+
+Vault starts sealed and is automatically unsealed by the [vault-unsealer](../unsealer/) CronJob.
+
+## Resources
+
+- **Memory**: 256Mi requests
+- **Storage**: 8Gi PVC
+
+## Access
+
+Internal service: `http://vault.vault:8200`
+
+UI accessible via IngressRoute (if configured).
+
+## Dependencies
+
+- **Vault Unsealer**: Automatically unseals Vault after restarts
+
+## References
+
+- [Vault Documentation](https://developer.hashicorp.com/vault/docs)
+- [Helm Chart](https://github.com/hashicorp/vault-helm)
   dataStorage:
     size: 8Gi
     storageClass: nfs-sc

@@ -1,172 +1,57 @@
 # Loki
 
-Log aggregation system designed to be cost-effective and easy to operate.
-
-## What is Loki?
-
-Loki collects logs from all containers in your cluster and makes them searchable. Think of it as "Prometheus for logs" - it uses similar labels and integrates perfectly with Grafana.
-
-## What it does
-
-- **Log aggregation**: Collects logs from all pods
-- **Indexed labels**: Indexes metadata, not log content (cost-effective)
-- **LogQL queries**: Query language similar to PromQL
-- **Grafana integration**: Seamless log viewing in Grafana
-- **Multi-tenancy**: Support for multiple tenants
-- **Long-term storage**: Compress and store logs cheaply
-
-## How it works
-
-1. Applications write logs to STDOUT/STDERR
-2. Kubernetes captures container logs
-3. Log collector (Alloy/Promtail) reads logs from nodes
-4. Collector adds labels (namespace, pod name, etc.)
-5. Logs are sent to Loki
-6. Loki indexes labels (not log content)
-7. You query logs using LogQL in Grafana
-
-## Why Loki?
-
-Traditional log systems (ELK Stack) index all log content:
-- ❌ Expensive to run
-- ❌ High resource requirements
-- ❌ Complex to operate
-
-Loki only indexes labels:
-- ✅ Lightweight and cheap
-- ✅ Low resource usage
-- ✅ Simple to operate
-- ✅ Perfect for Kubernetes
+Log aggregation system storing and indexing container logs.
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Deployment Mode
 
-Key settings:
+SingleBinary mode with all components in a single pod.
+
+### Storage
+
+10Gi NFS PVC with filesystem backend:
 ```yaml
-loki:
-  storage:
-    type: filesystem
-    filesystem:
-      chunks_directory: /loki/chunks
-      rules_directory: /loki/rules
-      
-  retention_period: 168h  # 7 days
-  
-  limits_config:
-    retention_period: 168h
-    max_query_series: 10000
+storage:
+  type: filesystem
+persistence:
+  size: 10Gi
+  storageClass: nfs-sc
 ```
 
-## LogQL Query Language
+### Schema
 
-Query logs similar to PromQL:
-
-### Basic Queries
-
-```logql
-# All logs from media namespace
-{namespace="media"}
-
-# Logs from specific pod
-{pod="jellyfin-abc123"}
-
-# Logs containing "error"
-{namespace="media"} |= "error"
-
-# Logs NOT containing "debug"
-{namespace="media"} != "debug"
-
-# Case-insensitive search
-{namespace="media"} |~ "(?i)error"
+TSDB schema:
+```yaml
+schemaConfig:
+  configs:
+    - from: "2024-01-01"
+      store: tsdb
+      schema: v13
 ```
 
-### Filtering and Parsing
+### Pattern Ingester
 
-```logql
-# Parse JSON logs
-{app="myapp"} | json
-
-# Parse and filter by field
-{app="myapp"} | json | level="error"
-
-# Extract fields with regex
-{app="myapp"} | regexp "user=(?P<user>\\w+)"
-
-# Line format
-{app="myapp"} | line_format "{{.timestamp}} {{.message}}"
+```yaml
+pattern_ingester:
+  enabled: true
 ```
 
-### Aggregations
+## Resources
 
-```logql
-# Count log lines per second
-rate({namespace="media"}[5m])
+- **CPU**: 200m requests, 500m limits
+- **Memory**: 512Mi requests, 1Gi limits
+- **Storage**: 10Gi PVC
+- **Node Selector**: `size: m`
 
-# Count errors per pod
-sum(rate({namespace="media"} |= "error" [5m])) by (pod)
+## Access
 
-# Bytes per second
-sum(rate({namespace="media"}[5m])) by (namespace)
-```
+`http://loki.monitoring:3100` with `X-Scope-OrgID: homelab` header.
 
-## Log Labels
+## References
 
-Loki automatically adds labels:
-- `namespace`: Kubernetes namespace
-- `pod`: Pod name
-- `container`: Container name
-- `stream`: stdout or stderr
-- `node`: Node name
-
-You can add custom labels, but **avoid high cardinality**:
-- ✅ Good: `app`, `environment`, `level`
-- ❌ Bad: `user_id`, `request_id`, `timestamp`
-
-## Deployment
-
-Deployed by ArgoCD along with log collector (Alloy).
-
-## Accessing Logs
-
-### Via Grafana (Recommended)
-
-1. Open Grafana
-2. Go to Explore
-3. Select Loki data source
-4. Use Log Browser to build queries
-5. Click on logs to expand details
-
-### Direct API
-
-```bash
-# Port-forward to Loki
-kubectl port-forward -n monitoring svc/loki 3100:3100
-
-# Query logs
-curl -G -s "http://localhost:3100/loki/api/v1/query_range" \
-  --data-urlencode 'query={namespace="media"}' \
-  --data-urlencode 'limit=10'
-```
-
-## Log Collectors
-
-Loki needs a log collector to send logs:
-
-### Alloy (Recommended - included in this repo)
-- Modern collector
-- Low resource usage
-- Configuration as code
-
-### Promtail
-- Official Loki agent
-- Lightweight
-- Good for simple deployments
-
-### Fluentd/Fluent Bit
-- More features
-- Higher resource usage
-- Good for complex pipelines
+- [Loki Documentation](https://grafana.com/docs/loki/latest/)
+- [Helm Chart](https://github.com/grafana/loki/tree/main/production/helm/loki)
 
 ## Storage and Retention
 

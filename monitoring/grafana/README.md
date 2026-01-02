@@ -1,155 +1,62 @@
 # Grafana
 
-Visualization and analytics platform for creating dashboards from your metrics, logs, and traces.
-
-## What is Grafana?
-
-Grafana is your monitoring dashboard. It takes metrics from Prometheus, logs from Loki, and traces from Tempo, and displays them in beautiful, interactive visualizations.
-
-## What it does
-
-- **Dashboard creation**: Build custom visualizations of your data
-- **Multiple data sources**: Query Prometheus, Loki, Tempo, and more
-- **Alerting**: Visual alert rules with notification channels
-- **Templating**: Create dynamic, reusable dashboards
-- **Explore**: Ad-hoc query and data exploration
-- **Sharing**: Share dashboards with your team
-
-## How it works
-
-1. You access Grafana's web interface
-2. Grafana connects to configured data sources (Prometheus, Loki, Tempo)
-3. You create dashboards with panels (graphs, tables, stats)
-4. Each panel runs queries against data sources
-5. Grafana renders the results as visualizations
-6. Dashboards auto-refresh to show real-time data
-
-## Key Features
-
-- **Unified observability**: Metrics, logs, traces in one interface
-- **Correlation**: Jump from metric spike to related logs
-- **Annotations**: Mark events on graphs
-- **Variables**: Make dashboards dynamic with dropdowns
-- **Playlists**: Rotate through dashboards on a TV
-- **Alerting**: Define alerts visually
+Visualization and analytics platform for metrics, logs, and traces.
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Authentication
 
-Key settings:
+Admin credentials from Vault:
 ```yaml
-persistence:
-  enabled: true
-  size: 10Gi
-  storageClass: nfs-sc
-
+adminUser: admin
 adminPassword: <path:secret/data/monitoring/grafana#admin_password>
-
-datasources:
-  - name: Prometheus
-    type: prometheus
-    url: http://prometheus-server
-    
-  - name: Loki
-    type: loki
-    url: http://loki:3100
-    
-  - name: Tempo
-    type: tempo
-    url: http://tempo:3100
 ```
 
-## Accessing Grafana
+### Pre-configured Datasources
 
-Access through your configured ingress URL (e.g., `https://grafana.yourdomain.com`)
-
-Default credentials:
-- Username: `admin`
-- Password: Stored in Vault or configured in `values.yaml`
-
-## Creating Dashboards
-
-### 1. Add a Data Source
-- Go to Configuration → Data Sources
-- Add Prometheus, Loki, Tempo
-- Test connection
-
-### 2. Create Dashboard
-- Click + → Dashboard
-- Add Panel
-- Select visualization type (Graph, Gauge, Table, etc.)
-- Write query in PromQL (for Prometheus) or LogQL (for Loki)
-- Configure panel settings
-
-### 3. Example Panel
-
-**CPU Usage by Pod**:
-```promql
-sum(rate(container_cpu_usage_seconds_total{namespace="media"}[5m])) by (pod)
+**Prometheus** (default):
+```yaml
+url: http://prometheus-server.monitoring:80
 ```
 
-**Application Logs**:
-```logql
-{namespace="media"} |= "error"
+**Loki** (with multi-tenancy header):
+```yaml
+url: http://loki.monitoring:3100
+jsonData:
+  httpHeaderName1: "X-Scope-OrgID"
+secureJsonData:
+  httpHeaderValue1: "homelab"
 ```
 
-## Pre-built Dashboards
-
-Import community dashboards from Grafana.com:
-
-Popular dashboards:
-- Kubernetes Cluster Monitoring (ID: 7249)
-- Node Exporter Full (ID: 1860)
-- Traefik (ID: 11462)
-- Prometheus Stats (ID: 2)
-
-Import: Dashboard → Import → Enter ID
-
-## Dashboard Organization
-
-```
-Dashboards/
-├── Kubernetes/
-│   ├── Cluster Overview
-│   ├── Node Details
-│   └── Pod Details
-├── Applications/
-│   ├── Jellyfin
-│   ├── Vault
-│   └── ArgoCD
-├── Networking/
-│   └── Traefik
-└── Security/
-    ├── Falco Alerts
-    └── CrowdSec
+**Tempo**:
+```yaml
+url: http://tempo.monitoring:3100
 ```
 
-## Variables
+### Imported Dashboards
 
-Make dashboards dynamic with variables:
+- Traefik (ID: 17347)
+- CrowdSec (ID: 21419)
+- Falco (ID: 17319)
 
-```
-$namespace: Dropdown to select namespace
-$pod: Dropdown to select pod
-```
+## Resources
 
-Query:
-```promql
-container_memory_usage_bytes{namespace="$namespace", pod="$pod"}
-```
+Default Helm chart allocations.
 
-## Alerting
+## Access
 
-Create alerts in Grafana:
+`https://grafana.{{ .Values.domain }}`
 
-1. Edit a panel
-2. Go to Alert tab
-3. Define condition (e.g., "when avg() is above 80")
-4. Configure notification channel (Email, Slack, etc.)
-5. Save alert
+## Dependencies
 
-## Explore View
+- Prometheus
+- Loki
+- Tempo
+
+## References
+
+- [Grafana Documentation](https://grafana.com/docs/grafana/latest/)
+- [Helm Chart](https://github.com/grafana/helm-charts/tree/main/charts/grafana)## Explore View
 
 Ad-hoc querying without creating dashboards:
 - Switch to Explore view

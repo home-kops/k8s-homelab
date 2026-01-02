@@ -1,37 +1,52 @@
 # CWA Downloader
 
-Automated eBook downloader companion service for Calibre Web Automated.
-
-## What is CWA Downloader?
-
-CWA Downloader is a service that automatically downloads eBooks from configured sources and imports them into your Calibre Web Automated library.
-
-## What it does
-
-- **Automated downloads**: Fetches eBooks from configured sources
-- **Automatic import**: Imports downloaded books into CWA
-- **Format handling**: Manages different eBook formats
-- **Scheduling**: Runs downloads on a schedule
-- **Deduplication**: Avoids downloading books you already have
-
-## How it works
-
-1. CWA Downloader runs on a schedule (e.g., daily)
-2. It checks configured sources for new eBooks
-3. Downloads matching books based on your criteria
-4. Imports them into the Calibre library
-5. CWA picks up the new books automatically
-6. Books appear in your library with metadata
-
-## Use Cases
-
-- **Series completion**: Automatically download new books in a series
-- **Author following**: Get new releases from favorite authors
-- **Free eBooks**: Daily free book promotions
-- **Newsletter integration**: Download books from deal newsletters
-- **RSS feeds**: Monitor RSS feeds for eBook announcements
+Automated eBook downloader with VPN sidecar for secure downloads.
 
 ## Configuration
+
+### Container Images
+
+**Main container**: [calibre-web-automated-book-downloader](https://github.com/calibrain/calibre-web-automated-book-downloader)
+
+**VPN sidecar**: [qmcgaw/gluetun](https://github.com/qdm12/gluetun)
+
+### VPN Sidecar
+
+All download traffic routes through the Gluetun VPN container. Credentials from Vault:
+```yaml
+vpn:
+  user: <path:secret/data/p2p/vpn#user>
+  password: <path:secret/data/p2p/vpn#password>
+```
+
+Provides network isolation and kill switch if VPN drops.
+
+### Storage
+
+NFS mount for Calibre library:
+```yaml
+nfs: <path:secret/data/infra#nfs>
+```
+
+## Resources
+
+- **Node Selector**: `size: s` (small nodes)
+- Other resources: Not explicitly limited
+
+## Access
+
+**IngressRoute**: `https://cwa-downloader.{{ .Values.domain }}` (port 8084)
+
+Domain from Vault: `<path:secret/data/infra#domain>`
+
+## Dependencies
+
+- **CWA**: Downloads books into library that CWA serves
+
+## References
+
+- [CWA Book Downloader GitHub](https://github.com/calibrain/calibre-web-automated-book-downloader)
+- [Gluetun VPN Client](https://github.com/qdm12/gluetun)
 
 Main configuration file: [values.yaml](./values.yaml)
 

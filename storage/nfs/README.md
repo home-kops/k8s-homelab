@@ -1,65 +1,68 @@
 # NFS Provisioner
 
-Dynamic storage provisioner that automatically creates persistent volumes using an NFS server.
+Dynamic storage provisioner creating persistent volumes on NFS server.
 
-## What is the NFS Provisioner?
+## Deployment
 
-The NFS Provisioner automatically creates storage volumes for your applications. When an app says "I need 10GB of storage," the provisioner creates it on your NFS server without you having to manually set anything up.
+**Manually bootstrapped** via [tooling/bootstrap](../tooling/bootstrap) script.
 
-## What it does
-
-- **Dynamic provisioning**: Automatically creates storage when requested
-- **NFS-backed**: Uses your existing NFS server for storage
-- **ReadWriteMany**: Multiple pods can read/write to the same volume simultaneously
-- **Automatic cleanup**: Deletes storage when no longer needed
-- **StorageClass integration**: Works with standard Kubernetes storage APIs
-
-## How it works
-
-1. An application creates a PersistentVolumeClaim (PVC) requesting storage
-2. The NFS provisioner sees the request
-3. It creates a directory on your NFS server
-4. It creates a PersistentVolume (PV) pointing to that directory
-5. It binds the PV to the application's PVC
-6. The application mounts the volume and uses it
-7. When the PVC is deleted, the provisioner deletes the directory
-
-## Why NFS?
-
-NFS is ideal for homelabs because:
-- **Shared storage**: Multiple pods can access the same data
-- **Simple setup**: Easy to configure on most home servers
-- **Existing hardware**: Use your NAS or file server
-- **Centralized backup**: Back up one NFS server instead of many volumes
+Deployed via **local Helm chart** with templates in [templates/](./templates/):
+- [deployment.yaml](./templates/deployment.yaml)
+- [serviceaccount.yaml](./templates/serviceaccount.yaml)
+- [storageclass.yaml](./templates/storageclass.yaml)
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### NFS Server
 
-Key settings:
+Server details from Vault:
 ```yaml
 nfs:
-  server: 192.168.1.100        # Your NFS server IP
-  path: /mnt/storage/k8s       # Path on NFS server
-  
-storageClass:
-  name: nfs-sc                 # Storage class name
-  reclaimPolicy: Retain        # Keep data when PVC deleted
-  archiveOnDelete: true        # Archive instead of immediate delete
+  server: <path:secret/data/infra#k8s_nfs>
+  path: /k8s-homelab
 ```
 
-## Prerequisites
+### Storage Class
 
-Before deploying, ensure:
-1. NFS server is running and accessible from cluster nodes
-2. NFS exports are configured correctly
-3. Cluster nodes have NFS client tools installed
+Creates default StorageClass `nfs-sc`:
+```yaml
+storageClass:
+  name: nfs-sc
+  defaultClass: true
+  reclaimPolicy: Retain
+  archiveOnDelete: false
+```
 
-### NFS Server Setup
+- **defaultClass: true**: Used when PVCs omit `storageClassName`
+- **reclaimPolicy: Retain**: PVs persist after PVC deletion
+- **archiveOnDelete: false**: Immediate directory deletion
 
-On your NFS server (example for Linux):
+### Container Image
 
-```bash
+[registry.k8s.io/sig-storage/nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner)
+
+### Control Plane Deployment
+
+**Runs on control plane nodes only**:
+```yaml
+nodeSelector:
+  node-role.kubernetes.io/control-plane: ""
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    effect: NoSchedule
+```
+
+Ensures provisioner high availability and reduces network hops to storage.
+
+## Resources
+
+Default container resource allocations (not customized).
+
+## References
+
+- [NFS Subdir External Provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner)
+- [Kubernetes Storage Documentation](https://kubernetes.io/docs/concepts/storage/)
 # Install NFS server
 sudo apt install nfs-kernel-server
 

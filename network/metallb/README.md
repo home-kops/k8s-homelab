@@ -1,61 +1,63 @@
 # MetalLB
 
-Load balancer implementation for bare metal Kubernetes clusters.
+Load balancer providing external IP addresses to services in bare metal cluster.
 
-## What is MetalLB?
+## Deployment
 
-MetalLB provides LoadBalancer-type services in clusters that don't run on cloud providers. In cloud environments (AWS, GCP, Azure), LoadBalancers are provided automatically. On bare metal or homelab clusters, MetalLB fills that gap.
+**Manually bootstrapped** via [tooling/bootstrap](../tooling/bootstrap) script.
 
-## What it does
-
-- **External IPs**: Assigns real IP addresses to LoadBalancer services
-- **Network integration**: Makes services accessible from outside the cluster
-- **Two modes**: Layer 2 (ARP) or BGP routing
-- **IP pool management**: Manages a pool of available IP addresses
-
-## Why you need it
-
-Without MetalLB on bare metal:
-- LoadBalancer services stay "Pending" forever
-- You're limited to NodePort (high ports like 30000+)
-- No clean way to expose services externally
-
-With MetalLB:
-- LoadBalancer services get real external IPs
-- Access services on standard ports (80, 443)
-- Clean integration with Traefik and other ingress controllers
-
-## How it works
-
-### Layer 2 Mode (Most common for homelabs)
-
-1. You create a LoadBalancer service
-2. MetalLB assigns an IP from its pool
-3. MetalLB responds to ARP requests for that IP
-4. External clients can reach the service via that IP
-
-### BGP Mode (Advanced)
-
-1. MetalLB peers with your network router via BGP
-2. It advertises service IPs to your router
-3. Router handles routing to the cluster
+Deployed via **official Helm chart** ([kustomization.yaml](./kustomization.yaml)) with custom IP pool configuration in [ip-addresspool.yaml](./ip-addresspool.yaml).
 
 ## Configuration
 
-Main configuration file: [ip-addresspool.yaml](./ip-addresspool.yaml)
+### IP Address Pool
 
+**Single IP** allocated ([ip-addresspool.yaml](./ip-addresspool.yaml)):
 ```yaml
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: homelab-pool
-  namespace: network
+  name: default-pool
 spec:
   addresses:
-    - 192.168.1.200-192.168.1.220  # IP range to use
+    - 192.168.10.99/32
 ```
 
-### L2Advertisement
+Assigned to Traefik LoadBalancer service.
+
+### Layer 2 Advertisement
+
+**Control plane nodes only**:
+```yaml
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default-advertisement
+spec:
+  ipAddressPools:
+    - default-pool
+  nodeSelectors:
+    - matchLabels:
+        node-role.kubernetes.io/control-plane: ""
+```
+
+Restricting to control plane ensures stable network connectivity for ingress traffic.
+
+### How It Works
+
+1. Traefik requests LoadBalancer IP
+2. MetalLB assigns `192.168.10.99`
+3. MetalLB on control plane responds to ARP requests
+4. External clients reach Traefik at `192.168.10.99:80/443`
+
+## Resources
+
+Default Helm chart resource allocations.
+
+## References
+
+- [MetalLB Documentation](https://metallb.universe.tf/)
+- [Helm Chart](https://github.com/metallb/metallb/tree/main/charts/metallb)### L2Advertisement
 
 ```yaml
 apiVersion: metallb.io/v1beta1

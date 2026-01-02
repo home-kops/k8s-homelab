@@ -1,97 +1,55 @@
 # Prometheus
 
-Monitoring system and time-series database for collecting and storing metrics.
-
-## What is Prometheus?
-
-Prometheus is the metrics engine of your observability stack. It collects performance data from all your applications and Kubernetes components, storing it for querying and alerting.
-
-## What it does
-
-- **Metrics collection**: Scrapes metrics from applications and services
-- **Time-series storage**: Stores metrics with timestamps
-- **Query language**: PromQL for powerful metric queries
-- **Alerting**: Defines rules to trigger alerts on conditions
-- **Service discovery**: Automatically finds services to monitor
-- **Multi-dimensional data**: Labels for flexible querying
-
-## How it works
-
-1. Prometheus discovers targets to monitor (services, pods, nodes)
-2. It scrapes HTTP endpoints on those targets (usually `/metrics`)
-3. Metrics are stored in its time-series database
-4. You query metrics using PromQL (Prometheus Query Language)
-5. Grafana visualizes the metrics
-6. AlertManager sends notifications when thresholds are breached
-
-## What Prometheus Monitors
-
-In your cluster:
-- **Kubernetes components**: API server, scheduler, controller-manager
-- **Nodes**: CPU, memory, disk, network usage
-- **Pods**: Container resource usage
-- **Applications**: Custom application metrics
-- **Exporters**: Specialized metrics (node-exporter, kube-state-metrics)
+Metrics collection and time-series database for cluster and application monitoring.
 
 ## Configuration
 
-Main configuration file: [values.yaml](./values.yaml)
+### Storage
 
-Key settings:
+8Gi NFS-backed PVC:
 ```yaml
 server:
   persistentVolume:
-    enabled: true
     size: 8Gi
     storageClass: nfs-sc
-    
-  retention: "15d"  # Keep metrics for 15 days
-  
-  resources:
-    requests:
-      cpu: 250m
-      memory: 1Gi
-    limits:
-      cpu: 1000m
-      memory: 2Gi
 ```
 
-### Components Deployed
+### Remote Write Receiver
 
-- **Prometheus Server**: Main component that scrapes and stores metrics
-- **kube-state-metrics**: Exposes Kubernetes object state as metrics
-- **node-exporter**: Exposes node hardware/OS metrics
-- **AlertManager** (optional): Handles alert routing and notifications
-
-## Metrics Format
-
-Prometheus metrics format:
-```
-# HELP http_requests_total Total HTTP requests
-# TYPE http_requests_total counter
-http_requests_total{method="GET",status="200"} 1234
-http_requests_total{method="POST",status="201"} 567
+Accepts metrics from external sources:
+```yaml
+server:
+  remoteWrite:
+    receiver:
+      enabled: true
 ```
 
-## PromQL Queries
+### Exporters
 
-Query language for metrics:
+**node-exporter**: DaemonSet collecting host metrics from all nodes.
 
-```promql
-# CPU usage by pod
-sum(rate(container_cpu_usage_seconds_total[5m])) by (pod)
+**kube-state-metrics**: Kubernetes object metrics.
 
-# Memory usage
-container_memory_usage_bytes{namespace="media"}
+## Resources
 
-# HTTP request rate
-rate(http_requests_total[5m])
+- **CPU**: 250m requests, 1000m limits
+- **Memory**: 1Gi requests, 2Gi limits
+- **Storage**: 8Gi PVC
+- **Node Selector**: `size: m`
 
-# 95th percentile latency
-histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
-```
+## Access
 
-## Common Metrics
+`http://prometheus-server.monitoring:80`
+
+## Dependencies
+
+- node-exporter
+- kube-state-metrics
+
+## References
+
+- [Prometheus Documentation](https://prometheus.io/docs/)
+- [Helm Chart](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus)
 
 **Kubernetes**:
 - `kube_pod_status_phase`: Pod state (Running, Pending, Failed)
