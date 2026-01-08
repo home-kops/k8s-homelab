@@ -18,8 +18,8 @@ extraVolumes:
     - configMap:
         name: dashboards
         items:
-          - key: kubernetes.json
-            path: kubernetes.json
+        - key: kubernetes.json
+          path: /var/lib/grafana/dashboards/cm/kubernetes.json
 
 adminUser: <path:secret/data/monitoring/grafana#admin_user>
 adminPassword: <path:secret/data/monitoring/grafana#admin_password>
