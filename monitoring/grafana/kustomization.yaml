@@ -9,4 +9,4 @@ helmCharts:
   namespace: monitoring
   valuesFile: values.yaml
   additionalValuesFiles:
-    - dashboards/kubernetes.yaml
+  - dashboards/kubernetes.yaml
