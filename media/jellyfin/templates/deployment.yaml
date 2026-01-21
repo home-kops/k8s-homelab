@@ -23,12 +23,14 @@ spec:
       initContainers:
       - name: fix-permissions
         image: busybox
-        command: ["sh", "-c", "chown -R 1000:100 /run"]
+        command: ["sh", "-c", "chown -R 1000:100 /run /config"]
         securityContext:
           runAsUser: 0
         volumeMounts:
         - mountPath: /run
           name: run
+        - mountPath: /config
+          name: config
       containers:
       - name: jellyfin
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
