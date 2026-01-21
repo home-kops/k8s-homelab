@@ -3,10 +3,6 @@ kind: Deployment
 metadata:
   name: jellyfin
 spec:
-  securityContext:
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
   replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
@@ -16,6 +12,10 @@ spec:
       labels:
         app: jellyfin
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       automountServiceAccountToken: false
       {{- with .Values.deployment.nodeSelector }}
       nodeSelector:
