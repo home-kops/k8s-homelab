@@ -13,7 +13,7 @@ spec:
         app: jellyfin
     spec:
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false # fix
         seccompProfile:
           type: RuntimeDefault
       automountServiceAccountToken: false
@@ -26,7 +26,7 @@ spec:
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
+          readOnlyRootFilesystem: false # fix
           capabilities:
             drop: [ALL]
         env:
