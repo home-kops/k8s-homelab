@@ -12,6 +12,7 @@ spec:
       labels:
         app: cwa
     spec:
+      automountServiceAccountToken: false
       {{- with .Values.deployment.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

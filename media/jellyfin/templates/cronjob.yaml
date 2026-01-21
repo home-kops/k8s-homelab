@@ -10,6 +10,7 @@ spec:
         spec:
           containers:
           - name: backup
+            automountServiceAccountToken: false
             image: {{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}
             command:
             - /bin/sh
