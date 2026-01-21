@@ -13,7 +13,7 @@ spec:
         app: jellyfin
     spec:
       securityContext:
-        runAsRoot: false
+        runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 100
         fsGroup: 1000
@@ -28,6 +28,8 @@ spec:
       - name: jellyfin
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
         securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
           capabilities:
             drop: [ALL]
         ports:
