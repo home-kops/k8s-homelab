@@ -23,25 +23,25 @@ deployment:
 additionalVolumeMounts:
 - name: traefik-logs
   mountPath: /var/log/traefik
-ports:
-  # web:
-  #   middlewares:
-  #   - network-crowdsec@kubernetescrd
-  # websecure:
-  #   middlewares:
-  #   - network-crowdsec@kubernetescrd
-  loki:
-    port: 3100        
-    expose:
-      default: true
-    exposedPort: 3100
-    protocol: TCP
-  prometheus:
-    port: 9090
-    expose:
-      default: true
-    exposedPort: 9090
-    protocol: TCP
+# ports:
+#   # web:
+#   #   middlewares:
+#   #   - network-crowdsec@kubernetescrd
+#   # websecure:
+#   #   middlewares:
+#   #   - network-crowdsec@kubernetescrd
+#   loki:
+#     port: 3100        
+#     expose:
+#       default: true
+#     exposedPort: 3100
+#     protocol: TCP
+#   prometheus:
+#     port: 9090
+#     expose:
+#       default: true
+#     exposedPort: 9090
+#     protocol: TCP
 nodeSelector:
   role: cp
 tolerations:
