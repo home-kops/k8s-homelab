@@ -30,6 +30,12 @@ additionalVolumeMounts:
 #   websecure:
 #     middlewares:
 #     - network-crowdsec@kubernetescrd
+tracing:
+  otlp:
+    enabled: true
+    http:
+      enabled: true
+      endpoint: "https://opentelemetry-collector.monitoring:4318/v1/tracing"
 metrics:
   prometheus:
     service:
