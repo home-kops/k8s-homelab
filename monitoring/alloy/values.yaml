@@ -10,34 +10,11 @@ alloy:
         format = "logfmt"
       }
 
-      prometheus.remote_write "default" {
-        endpoint {
-          url = "http://prometheus-server/api/v1/write"
-        }
-      }
-
       loki.write "default" {
         endpoint {
           url       = "http://loki:3100/loki/api/v1/push"
           tenant_id = "homelab"
         }
-      }
-
-      prometheus.scrape "traefik" {
-        targets      = [
-          {"__address__" = "traefik.network:80", "instance" = "traefik"},
-        ]
-        forward_to   = [prometheus.remote_write.default.receiver]
-        metrics_path = "/api"
-      }
-
-      prometheus.scrape "crowdsec" {
-        targets      = [
-          {"__address__" = "crowdsec-agent-service:6060", "job" = "crowdsec-agent", "component" = "agent"},
-          {"__address__" = "crowdsec-service:6060", "job" = "crowdsec-lapi", "component" = "lapi"},
-        ]
-        forward_to   = [prometheus.remote_write.default.receiver]
-        metrics_path = "/metrics"
       }
 
       local.file_match "local_files" {
