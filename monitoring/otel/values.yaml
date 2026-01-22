@@ -7,14 +7,8 @@ config:
   exporters:
     otlphttp:
       endpoint: http://tempo:4318
-  receivers:
-    jaeger: null
-    prometheus: null
-    zipkin: null
   service:
     pipelines:
       traces:
-        receivers: [otlp]
-        exporters: [otlphttp]
-      metrics: null
-      logs: null
+        exporters:
+        - otlphttp
