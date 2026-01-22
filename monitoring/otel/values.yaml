@@ -21,6 +21,8 @@ config:
         insecure: true
   service:
     pipelines:
+      logs: null
+      metrics: null
       traces:
         receivers:
         - otlp
