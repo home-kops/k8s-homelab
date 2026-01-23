@@ -4,15 +4,6 @@ set -eu
 
 project_path="$(dirname $0)/.."
 
-# Install replicator
-helm repo add mittwald https://helm.mittwald.de
-helm repo update
-
-echo -e "\nDeploying replicator..."
-replicator_dir="${project_path}/replicator"
-
-helm upgrade --install --namespace default kubernetes-replicator mittwald/kubernetes-replicator --values "${replicator_dir}"/values.yaml
-
 kubectl create namespace network || true
 
 # traefik
