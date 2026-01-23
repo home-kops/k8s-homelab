@@ -15,17 +15,6 @@ verify_requirements() {
     error="1"
   fi
 
-  certificates_dir="${project_dir}/tooling/core/certificates"
-  if [[ ! -f "${certificates_dir}/sealed-secrets/cert.pem" ]]; then
-    echo "    [!] Sealed secrets certificate not found!"
-    error="1"
-  fi
-
-  if [[ ! -f "${certificates_dir}/sealed-secrets/key.pem" ]]; then
-    echo "    [!] Sealed secrets certificate key not found!"
-    error="1"
-  fi
-
   if [[ $error ]]; then
     exit 1
   fi
