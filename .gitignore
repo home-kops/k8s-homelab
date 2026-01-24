@@ -1,4 +1,4 @@
 **/*.plain.*
 .env
 **/*.pem
-secrets/**
+tooling/secrets/**
