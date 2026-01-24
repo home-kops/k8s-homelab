@@ -14,7 +14,7 @@ helm upgrade nfs-sc "${nfs_dir}" \
   --wait
 
 # Install sealed secrets
-certificates_dir="${project_dir}/default/sealed-secrets/certificates"
+certificates_dir="${project_dir}/tooling/secrets/certificates"
 
 kubectl create secret tls sealed-secrets-key \
   --cert="${certificates_dir}/cert.pem" \
