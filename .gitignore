@@ -1,3 +1,4 @@
 **/*.plain.*
 .env
 **/*.pem
+secrets/**
