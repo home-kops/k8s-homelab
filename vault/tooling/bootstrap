@@ -3,8 +3,8 @@
 set -eu
 
 # Add helm repository
-helm repo add hashicorp https://helm.releases.hashicorp.com
-helm repo update
+helm repo add hashicorp https://helm.releases.hashicorp.com && \
+  helm repo update
 
 kubectl create namespace vault || true
 
@@ -16,3 +16,56 @@ vault_dir="$(dirname $0)/../vault"
 sed -i "s|<path:secret/data/infra#domain>|${DOMAIN}|" "${vault_dir}"/values.yaml
 
 kubectl kustomize "${vault_dir}" --enable-helm | kubectl apply -f -
+
+# Initialize vault
+initialize_output="$(kubectl --namespace vault exec -it vault-0 -- vault operator init)"
+
+# Process outputs, extract keys and token (token, key<1..5>)
+
+kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key1}"
+kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key2}"
+kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key3}"
+
+# Confirm vault is unsealed
+
+# Configure
+
+kubectl --namespace vault exec -it vault-0 -- vault login "${token}" || exit 1
+
+kubectl --namespace vault exec -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes auth already enabled"
+
+# Test if needed
+kubectl --namespace vault exec -it vault-0 -- vault write auth/kubernetes/config \
+  token_reviewer_jwt="$(kubectl get secret vault-auth --namespace vault -o jsonpath="{.data.token}" | base64 -d)" \
+  kubernetes_host="$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.server}')" \
+  kubernetes_ca_cert="$(kubectl get secret vault-auth --namespace vault -o jsonpath="{.data['ca\.crt']}" | base64 -d)"
+
+kubectl --namespace vault exec -it vault-0 -- vault policy write admin - <<EOF
+path "secret/data/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+EOF
+
+kubectl --namespace vault exec -it vault-0 -- vault policy write read-policy - <<EOF
+path "secret/data/*" {
+  capabilities = ["read", "list"]
+}
+EOF
+
+kubectl --namespace vault exec -it vault-0 -- vault write auth/kubernetes/role/argocd-reader \
+  bound_service_account_names=argocd-repo-server \
+  bound_service_account_namespaces="*" \
+  policies=read-policy \
+  ttl=24h
+
+kubectl --namespace vault exec -it vault-0 -- vault auth enable userpass || echo "Already enabled"
+
+kubectl --namespace vault exec -it vault-0 -- vault write auth/userpass/users/admin \
+  password="${VAULT_ADMIN_PASSWORD}" \
+  policies=admin
+
+kubectl --namespace vault exec -it vault-0 -- vault secrets enable -path=secret -version=2 kv
+
+# Load secrets
+
+# Load secret files
