@@ -4,7 +4,7 @@ kind: Kustomization
 helmCharts:
 - name: tempo
   repo: https://grafana.github.io/helm-charts
-  version: 1.24.1
+  version: 1.24.4
   releaseName: tempo
   namespace: monitoring
   valuesFile: values.yaml
