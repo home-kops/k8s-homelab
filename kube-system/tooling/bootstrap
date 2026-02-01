@@ -1,0 +1,16 @@
+#!/bin/bash
+
+project_path="$(dirname $0)/.."
+
+helm repo add istio https://istio-release.storage.googleapis.com/charts && \
+  helm repo update
+
+helm install istio-base istio/base \
+  --namespace kube-system \
+  --values "${project_path}/istio-cni/values.yaml" \
+  --wait
+
+helm install istio-cni istio/cni \
+  --namespace kube-system \
+  --values "${project_path}/istio-cni/values.yaml" \
+  --wait
