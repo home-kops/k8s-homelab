@@ -10,7 +10,7 @@ sed -i "s|<path:secret/data/infra#k8s_nfs>|${K8S_NFS}|" "${nfs_dir}"/values.yaml
 helm upgrade nfs-sc "${nfs_dir}" \
   --install \
   --namespace default \
-  --file "${nfs_dir}"/values.yaml \
+  --values "${nfs_dir}"/values.yaml \
   --wait
 
 # Install sealed secrets
