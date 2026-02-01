@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if [[ -z "${ENV}" ]]; then
-  ENV="test"
-fi
-
-set -a && source .env.${ENV} && set +a
-
 # Verify requirements
 verify_requirements() {
   local project_dir=""
