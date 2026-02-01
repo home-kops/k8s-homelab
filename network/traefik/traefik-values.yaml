@@ -8,7 +8,7 @@ resources:
 logs:
   general:
     format: json
-    filePath: "/var/log/traefik/traefik.log"
+#    filePath: "/var/log/traefik/traefik.log"
   access:
     enabled: true
 podSecurityContext:
