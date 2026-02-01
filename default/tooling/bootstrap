@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 project_dir="$1"
 
 # Install nfs storage class
