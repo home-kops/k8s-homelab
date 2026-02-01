@@ -17,6 +17,13 @@ helmCharts:
     profile: ambient
     global:
       istioNamespace: network
+    nodeSelector:
+      role: cp
+    tolerations:
+    - key: "role"
+      operator: "Equal"
+      value: "cp"
+      effect: "NoSchedule"
 
 - name: cni
   repo: https://istio-release.storage.googleapis.com/charts
