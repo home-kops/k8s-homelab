@@ -6,9 +6,7 @@ project_path="$(dirname $0)/.."
 
 kubectl create namespace network || true
 
-# istio control and data planes
-echo -e "\nDeploying istio..."
-
+# istio
 kubectl kustomize "${project_path}/istio" --enable-helm | kubectl apply -f -
 
 # traefik

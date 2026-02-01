@@ -1,3 +1,5 @@
 **/*.plain.*
+.env.test
+.env.prod
 .env
 tooling/secrets/**
