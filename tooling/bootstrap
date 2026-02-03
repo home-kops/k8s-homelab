@@ -20,6 +20,7 @@ verify_requirements() {
   fi
 }
 
+sealed_secrets_certificates_dir="$1"
 project_path="$(dirname $0)/.."
 
 echo "[+] Verifying requirements..."
@@ -30,7 +31,7 @@ echo -e "    Everything ready!\\n"
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml
 
 echo "[1/4] Bootstraping core services..."
-"${project_path}"/default/tooling/bootstrap "$(dirname $0)/secrets/certificates"
+"${project_path}"/default/tooling/bootstrap "${sealed_secrets_certificates_dir}"
 echo -e "   Core services ready!\\n"
 
 echo "[2/4] Bootstraping network..."
