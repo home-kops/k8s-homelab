@@ -24,6 +24,9 @@ kubectl kustomize "${vault_dir}" --enable-helm | kubectl apply -f -
 # Wait for vault
 kubectl --namespace vault wait --for=create pod/vault-0 --timeout=60s
 
+# Sleep 30 seconds to initialize the vault
+sleep 30
+
 # Initialize vault
 initialize_output="$(kubectl --namespace vault exec -it vault-0 -- vault operator init)"
 
