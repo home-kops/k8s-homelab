@@ -39,7 +39,7 @@ kubectl kustomize "${certmanager_dir}" --enable-helm | kubectl apply -f -
 echo -e "\nDeploying metallb..."
 metallb_dir="${project_path}/metallb"
 
-sed -i "s|<path:secret/data/infra#lb_ip>|${LB_IP}|" "${metallb_dir}"/ip_addresspool.yaml
+sed -i "s|<path:secret/data/infra#lb_ip>|${LB_IP}|" "${metallb_dir}"/ip-addresspool.yaml
 
 helm repo add metallb https://metallb.github.io/metallb
 helm upgrade --install --namespace network -f "${metallb_dir}"/values.yaml metallb metallb/metallb --wait
