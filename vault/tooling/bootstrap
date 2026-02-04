@@ -21,6 +21,9 @@ sed -i "s|<path:secret/data/infra#env>|${ENV}|" "${vault_dir}"/values.yaml
 
 kubectl kustomize "${vault_dir}" --enable-helm | kubectl apply -f -
 
+# Wait for vault
+kubectl --namespace vault wait --for=condition=Ready pod/vault-0
+
 # Initialize vault
 initialize_output="$(kubectl --namespace vault exec -it vault-0 -- vault operator init)"
 
