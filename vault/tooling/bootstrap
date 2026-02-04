@@ -24,21 +24,16 @@ kubectl kustomize "${vault_dir}" --enable-helm | kubectl apply -f -
 # Initialize vault
 initialize_output="$(kubectl --namespace vault exec -it vault-0 -- vault operator init)"
 
-echo "${initialize_output}"
+unseal_keys="$(echo "${initialize_output}" | grep "Unseal Key" | sed -r 's/^Unseal Key [1-5]\: (.*)$/\1/g')"
+needed_unseal_keys="$(echo "${unseal_keys}" | head -n3)"
 
-exit 0
-
-# Process outputs, extract keys and token (token, key<1..5>)
-
-kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key1}"
-kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key2}"
-kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key3}"
-
-# Confirm vault is unsealed
+while read key; do
+  kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key}"
+done <<< "${needed_unseal_keys}"
 
 # Configure
-
-kubectl --namespace vault exec -it vault-0 -- vault login "${token}" || exit 1
+root_token="$(echo "${initialize_output}" | grep "Initial Root Token" | sed 's/ //g' | cut -d: -f2)"
+kubectl --namespace vault exec -it vault-0 -- vault login "${root_token}" || exit 1
 
 kubectl --namespace vault exec -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes auth already enabled"
 
