@@ -21,11 +21,8 @@ sed -i "s|<path:secret/data/infra#env>|${ENV}|" "${vault_dir}"/values.yaml
 
 kubectl kustomize "${vault_dir}" --enable-helm | kubectl apply -f -
 
-# Wait for vault
+# Wait for vault pod to be created
 kubectl --namespace vault wait --for=create pod/vault-0 --timeout=60s
-
-# Sleep 30 seconds to initialize the vault
-sleep 30
 
 # Initialize vault
 initialize_output="$(kubectl --namespace vault exec -it vault-0 -- vault operator init)"
@@ -33,12 +30,11 @@ initialize_output="$(kubectl --namespace vault exec -it vault-0 -- vault operato
 unseal_keys="$(echo "${initialize_output}" | grep "Unseal Key" | sed -r 's/^Unseal Key [1-5]\: (.*)$/\1/g')"
 needed_unseal_keys="$(echo "${unseal_keys}" | head -n3)"
 
-echo "Unseal keys to use:"
-echo "${needed_unseal_keys}"
+echo "Unseal keys:"
+echo "${unseal_keys}"
 
 while read key; do
-  kubectl --namespace vault exec -it vault-0 -- vault operator unseal "${key}"
-  sleep 5
+  kubectl --namespace vault exec vault-0 -- vault operator unseal "${key}"
 done <<< "${needed_unseal_keys}"
 
 # Configure
