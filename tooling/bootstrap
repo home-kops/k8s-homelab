@@ -38,11 +38,11 @@ echo "[2/4] Bootstraping network..."
 "${project_path}"/network/tooling/bootstrap
 echo -e "   Network ready!\\n"
 
-exit 0
-
 echo "[3/4] Bootstraping vault..."
 "${project_path}"/vault/tooling/bootstrap
 echo -e "   Vault ready!\\n"
+
+exit 0
 
 echo "[4/4] Bootstraping devops-tools..."
 "${project_path}"/devops-tools/tooling/bootstrap

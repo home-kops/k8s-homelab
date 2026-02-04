@@ -2,6 +2,9 @@
 
 set -eu
 
+secrets_file="${1}"
+secret_files="${2}"
+
 # Add helm repository
 helm repo add hashicorp https://helm.releases.hashicorp.com && \
   helm repo update
@@ -20,6 +23,10 @@ kubectl kustomize "${vault_dir}" --enable-helm | kubectl apply -f -
 
 # Initialize vault
 initialize_output="$(kubectl --namespace vault exec -it vault-0 -- vault operator init)"
+
+echo "${initialize_output}"
+
+exit 0
 
 # Process outputs, extract keys and token (token, key<1..5>)
 
@@ -59,14 +66,18 @@ kubectl --namespace vault exec -it vault-0 -- vault write auth/kubernetes/role/a
   policies=read-policy \
   ttl=24h
 
+# Enable userpass engine
 kubectl --namespace vault exec -it vault-0 -- vault auth enable userpass || echo "Already enabled"
 
 kubectl --namespace vault exec -it vault-0 -- vault write auth/userpass/users/admin \
   password="${VAULT_ADMIN_PASSWORD}" \
   policies=admin
 
+# Enable kv2 engine
 kubectl --namespace vault exec -it vault-0 -- vault secrets enable -path=secret -version=2 kv
 
 # Load secrets
+"${vault_dir}"/tooling/load-secrets "${secrets_file}"
 
 # Load secret files
+"${vault_dir}"/tooling/load-secret-files "${secret_files}"
