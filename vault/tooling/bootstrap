@@ -32,7 +32,6 @@ init_status="$?"
 
 if [[ $init_status -eq 0 ]]; then
   echo "Vault already initialized"
-  exit 0
 fi
 
 if [[ $init_status -eq 1 ]]; then
