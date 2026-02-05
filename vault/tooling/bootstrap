@@ -46,38 +46,31 @@ done <<< "${needed_unseal_keys}"
 root_token="$(echo "${initialize_output}" | grep "Initial Root Token" | sed 's/ //g' | cut -d: -f2)"
 kubectl --namespace vault exec vault-0 -- vault login "${root_token}" || exit 1
 
+# Enable auth engines
+kubectl --namespace vault exec vault-0 -- vault auth enable userpass || echo "Userpass auth already enabled"
 kubectl --namespace vault exec vault-0 -- vault auth enable kubernetes || echo "Kubernetes auth already enabled"
 
-# Test if needed
+# Create policies
+policies_dir="${vault_dir}/tooling/policies"
+cat "${policies_dir}/admin.hcl" | kubectl --namespace vault exec -i vault-0 -- vault policy write admin -
+cat "${policies_dir}/read-only.hcl" | kubectl --namespace vault exec -i vault-0 -- vault policy write read-only -
+
+# Config Userpass auth for secrets loading
+kubectl --namespace vault exec vault-0 -- vault write auth/userpass/users/admin \
+  password="${VAULT_ADMIN_PASSWORD}" \
+  policies=admin
+
+# Config k8s auth for ArgoCD
 kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/config \
   token_reviewer_jwt="$(kubectl get secret vault-auth --namespace vault -o jsonpath="{.data.token}" | base64 -d)" \
   kubernetes_host="$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.server}')" \
   kubernetes_ca_cert="$(kubectl get secret vault-auth --namespace vault -o jsonpath="{.data['ca\.crt']}" | base64 -d)"
 
-kubectl --namespace vault exec vault-0 -- vault policy write admin - <<EOF
-path "secret/data/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-EOF
-
-kubectl --namespace vault exec vault-0 -- vault policy write read-policy - <<EOF
-path "secret/data/*" {
-  capabilities = ["read", "list"]
-}
-EOF
-
 kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/role/argocd-reader \
   bound_service_account_names=argocd-repo-server \
   bound_service_account_namespaces="*" \
-  policies=read-policy \
+  policies=read-only \
   ttl=24h
-
-# Enable userpass engine
-kubectl --namespace vault exec vault-0 -- vault auth enable userpass || echo "Already enabled"
-
-kubectl --namespace vault exec vault-0 -- vault write auth/userpass/users/admin \
-  password="${VAULT_ADMIN_PASSWORD}" \
-  policies=admin
 
 # Enable kv2 engine
 kubectl --namespace vault exec vault-0 -- vault secrets enable -path=secret -version=2 kv
