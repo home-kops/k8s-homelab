@@ -27,20 +27,33 @@ kubectl --namespace vault wait --for=create pod/vault-0 --timeout=60s
 # Wait for vault pod to init
 sleep 10
 
-echo "Initializing vault..."
+init_status="$(kubectl --namespace vault exec vault-0 -- vault operator init -status)"
 
-# Initialize vault
-initialize_output="$(kubectl --namespace vault exec vault-0 -- vault operator init)"
+if [[ $init_status -eq 1 ]]; then
+  echo "[!] Error checking vault init status"
+  exit 1
+fi
 
-unseal_keys="$(echo "${initialize_output}" | grep "Unseal Key" | sed -r 's/^Unseal Key [1-5]\: (.*)$/\1/g')"
-needed_unseal_keys="$(echo "${unseal_keys}" | head -n3)"
+if [[ $init_status -eq 0 ]]; then
+  echo "Vault already initialized!"
+  exit 0
+fi
 
-echo "Unseal keys:"
-echo "${unseal_keys}"
+if [[ $init_status -eq 2 ]]; then
+  echo "Initializing vault..."
 
-while read key; do
-  kubectl --namespace vault exec vault-0 -- vault operator unseal "${key}"
-done <<< "${needed_unseal_keys}"
+  initialize_output="$(kubectl --namespace vault exec vault-0 -- vault operator init)"
+
+  unseal_keys="$(echo "${initialize_output}" | grep "Unseal Key" | sed -r 's/^Unseal Key [1-5]\: (.*)$/\1/g')"
+  needed_unseal_keys="$(echo "${unseal_keys}" | head -n3)"
+
+  echo "Unseal keys:"
+  echo "${unseal_keys}"
+
+  while read key; do
+    kubectl --namespace vault exec vault-0 -- vault operator unseal "${key}"
+  done <<< "${needed_unseal_keys}"
+fi
 
 # Configure
 root_token="$(echo "${initialize_output}" | grep "Initial Root Token" | sed 's/ //g' | cut -d: -f2)"
