@@ -22,7 +22,7 @@ sed -i "s|<path:secret/data/devopstools/argocd#gh_org1_password>|${ARGOCD_GH_ORG
 sed -i "s|<path:secret/data/infra#env>|${ENV}|" "${argocd_dir}"/application.yaml
 
 # Install CRDs
-kubectl apply -k https://github.com/argoproj/argo-cd/manifests/crds\?ref\=stable
+kubectl apply --server-side -k https://github.com/argoproj/argo-cd/manifests/crds\?ref\=stable
 
 kubectl kustomize "${argocd_dir}" --enable-helm | kubectl apply -f -
 
