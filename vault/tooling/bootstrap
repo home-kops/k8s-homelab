@@ -27,16 +27,17 @@ kubectl --namespace vault wait --for=create pod/vault-0 --timeout=60s
 # Wait for vault pod to init
 sleep 10
 
-init_status="$(kubectl --namespace vault exec vault-0 -- vault operator init -status)"
+kubectl --namespace vault exec vault-0 -- vault operator init -status > /dev/null
+init_status="$?"
+
+if [[ $init_status -eq 0 ]]; then
+  echo "Vault already initialized"
+  exit 0
+fi
 
 if [[ $init_status -eq 1 ]]; then
   echo "[!] Error checking vault init status"
   exit 1
-fi
-
-if [[ $init_status -eq 0 ]]; then
-  echo "Vault already initialized!"
-  exit 0
 fi
 
 if [[ $init_status -eq 2 ]]; then
