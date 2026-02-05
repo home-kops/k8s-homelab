@@ -52,15 +52,20 @@ kubectl --namespace vault exec vault-0 -- vault auth enable kubernetes || echo "
 
 # Create policies
 policies_dir="${vault_dir}/tooling/policies"
+ls $policies_dir
+
+echo "Creating policies..."
 cat "${policies_dir}/admin.hcl" | kubectl --namespace vault exec -i vault-0 -- vault policy write admin -
 cat "${policies_dir}/read-only.hcl" | kubectl --namespace vault exec -i vault-0 -- vault policy write read-only -
 
 # Config Userpass auth for secrets loading
+echo "Configuring userpass auth..."
 kubectl --namespace vault exec vault-0 -- vault write auth/userpass/users/admin \
   password="${VAULT_ADMIN_PASSWORD}" \
   policies=admin
 
 # Config k8s auth for ArgoCD
+echo "Configuring k8s auth..."
 kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/config \
   token_reviewer_jwt="$(kubectl get secret vault-auth --namespace vault -o jsonpath="{.data.token}" | base64 -d)" \
   kubernetes_host="$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.server}')" \
@@ -75,8 +80,6 @@ kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/role/argoc
 # Enable kv2 engine
 kubectl --namespace vault exec vault-0 -- vault secrets enable -path=secret -version=2 kv
 
-# Load secrets
+echo "Loading secrets"
 "${vault_dir}"/tooling/load-secrets "${secrets_file}"
-
-# Load secret files
 "${vault_dir}"/tooling/load-secret-files "${secret_files}"
