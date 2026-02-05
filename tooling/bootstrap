@@ -45,8 +45,6 @@ echo "[3/4] Bootstraping vault..."
 "${project_path}"/vault/tooling/bootstrap "${vault_secrets}" "${vault_secret_files}"
 echo -e "   Vault ready!\\n"
 
-exit 0
-
 echo "[4/4] Bootstraping devops-tools..."
 "${project_path}"/devops-tools/tooling/bootstrap
 echo -e "   Devops-tools ready!\\n"
