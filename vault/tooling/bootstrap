@@ -93,5 +93,5 @@ kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/role/argoc
 kubectl --namespace vault exec vault-0 -- vault secrets enable -path=secret -version=2 kv
 
 echo "Loading secrets"
-"${vault_dir}"/tooling/load-secrets "${secrets_file}"
-"${vault_dir}"/tooling/load-secret-files "${secret_files}"
+"${vault_dir}"/../tooling/load-secrets "${secrets_file}"
+"${vault_dir}"/../tooling/load-secret-files "${secret_files}"
