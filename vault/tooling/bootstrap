@@ -78,15 +78,15 @@ kubectl --namespace vault exec vault-0 -- vault write auth/userpass/users/admin 
 
 # Config k8s auth for ArgoCD
 echo "Configuring k8s auth..."
+cluster_host="$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.server}')"
 kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/config \
-  token_reviewer_jwt="$(kubectl get secret vault-auth --namespace vault -o jsonpath="{.data.token}" | base64 -d)" \
-  kubernetes_host="$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.server}')" \
-  kubernetes_ca_cert="$(kubectl get secret vault-auth --namespace vault -o jsonpath="{.data['ca\.crt']}" | base64 -d)"
+  kubernetes_host="${cluster_host}"
 
 kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/role/argocd-reader \
   bound_service_account_names=argocd-repo-server \
-  bound_service_account_namespaces="*" \
+  bound_service_account_namespaces=devops-tools \
   policies=read-only \
+  audience=cd \
   ttl=24h
 
 # Enable kv2 engine
