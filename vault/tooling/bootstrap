@@ -86,7 +86,6 @@ kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/role/argoc
   bound_service_account_names=argocd-repo-server \
   bound_service_account_namespaces=devops-tools \
   policies=read-only \
-  audience=cd \
   ttl=24h
 
 # Enable kv2 engine
