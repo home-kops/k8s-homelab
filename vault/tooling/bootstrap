@@ -50,11 +50,11 @@ if [[ $init_status -eq 2 ]]; then
   echo "Unseal keys:"
   echo "${unseal_keys}"
 
-  local -i count=1
+  count=1
   while read key; do
     kubectl --namespace vault exec vault-0 -- vault operator unseal "${key}"
-    KEY="key${count}" VALUE="${key}" yq -Yi '.vault.unsealer.[$ENV.KEY] = [$ENV.VALUE]' "${secrets_file}"
-    count+=1
+    KEY="key${count}" VALUE="${key}" yq -Yi '.vault.unsealer.[$ENV.KEY] = $ENV.VALUE' "${secrets_file}"
+    count=$((count + 1))
   done <<< "${needed_unseal_keys}"
 
   # Login
