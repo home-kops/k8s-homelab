@@ -5,6 +5,6 @@ helmGlobals:
   chartHome: ../
 
 helmCharts:
-- name: nfs
+- name: nfs-sc
   namespace: default
   valuesFile: values.yaml
