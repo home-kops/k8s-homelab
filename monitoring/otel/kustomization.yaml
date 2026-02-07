@@ -4,7 +4,7 @@ kind: Kustomization
 helmCharts:
 - name: opentelemetry-collector
   repo: https://open-telemetry.github.io/opentelemetry-helm-charts
-  version: 0.142.2
+  version: 0.145.0
   releaseName: opentelemetry-collector
   namespace: monitoring
   valuesFile: values.yaml
