@@ -84,9 +84,9 @@ cluster_host="$(kubectl config view --minify --raw -o jsonpath='{.clusters[0].cl
 kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/config \
   kubernetes_host="${cluster_host}"
 
-kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/role/argocd-reader \
-  bound_service_account_names=argocd-repo-server \
-  bound_service_account_namespaces=devops-tools \
+kubectl --namespace vault exec vault-0 -- vault write auth/kubernetes/role/eso-reader \
+  bound_service_account_names=external-secrets \
+  bound_service_account_namespaces=external-secrets \
   policies=read-only \
   ttl=24h
 

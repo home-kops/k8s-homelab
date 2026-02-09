@@ -17,17 +17,17 @@ helm upgrade nfs-sc "${nfs_dir}" \
   --wait
 
 # Install sealed secrets
-kubectl create secret tls sealed-secrets-key \
-  --cert="${certificates_dir}/cert.pem" \
-  --key="${certificates_dir}/key.pem" \
-  --namespace default \
-  --dry-run=client -o yaml | kubectl apply -f -
-
-helm upgrade sealed-secrets sealed-secrets/sealed-secrets \
-  --install \
-  --namespace default \
-  --values "${project_path}/sealed-secrets/values.yaml" \
-  --wait
+# kubectl create secret tls sealed-secrets-key \
+#   --cert="${certificates_dir}/cert.pem" \
+#   --key="${certificates_dir}/key.pem" \
+#   --namespace default \
+#   --dry-run=client -o yaml | kubectl apply -f -
+# 
+# helm upgrade sealed-secrets sealed-secrets/sealed-secrets \
+#   --install \
+#   --namespace default \
+#   --values "${project_path}/sealed-secrets/values.yaml" \
+#   --wait
 
 # Install replicator
 # helm upgrade kubernetes-replicator mittwald/kubernetes-replicator \
