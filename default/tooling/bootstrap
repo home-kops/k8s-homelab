@@ -2,7 +2,6 @@
 
 set -eu
 
-certificates_dir="$1"
 project_path="$(dirname $0)/.."
 
 # Install nfs storage class
