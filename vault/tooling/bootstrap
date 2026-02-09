@@ -18,7 +18,6 @@ tooling_dir="$(dirname $0)"
 
 # Replace secrets
 sed -i "s|<path:secret/data/infra#domain>|${DOMAIN}|" "${vault_dir}"/values.yaml
-sed -i "s|<path:secret/data/infra#env>|${ENV}|" "${vault_dir}"/values.yaml
 
 kubectl kustomize "${vault_dir}" --enable-helm | kubectl apply -f -
 
