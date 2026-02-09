@@ -30,8 +30,8 @@ helm upgrade sealed-secrets sealed-secrets/sealed-secrets \
   --wait
 
 # Install replicator
-helm upgrade kubernetes-replicator mittwald/kubernetes-replicator \
-  --install \
-  --namespace default \
-  --values "${project_path}/replicator/values.yaml" \
-  --wait
+# helm upgrade kubernetes-replicator mittwald/kubernetes-replicator \
+#   --install \
+#   --namespace default \
+#   --values "${project_path}/replicator/values.yaml" \
+#   --wait
