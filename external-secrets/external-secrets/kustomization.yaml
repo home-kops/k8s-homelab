@@ -7,6 +7,8 @@ helmCharts:
   version: 2.0.0
   releaseName: external-secrets
   namespace: external-secrets
+  valuesInline:
+    installCRDs: false
 
 resources:
 - secret-store.yaml
