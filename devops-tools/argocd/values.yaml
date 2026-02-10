@@ -67,7 +67,7 @@ repoServer:
       runAsUser: 999
     envFrom:
     - configMapRef:
-      name: infra-config
+        name: infra-config
     volumeMounts:
     - mountPath: /var/run/argocd
       name: var-files
