@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: jellyfin
 spec:
-  type: {{ .Values.service.type }}
+  type: ClusterIP
   ports:
-  - port: {{ .Values.service.port }}
+  - port: 8096
     targetPort: 8096
   selector:
     app: jellyfin

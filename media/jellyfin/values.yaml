@@ -12,12 +12,6 @@ deployment:
     tag: "10.11.6"
   replicas: 1
 
-service:
-  type: ClusterIP
-  port: 8096
-
-nfs: 192.168.10.100
-
 backup:
   schedule: "0 15 * * *"
   image:
@@ -30,4 +24,5 @@ backup:
     echo "Removing backups older than 3 days"
     find /backup -maxdepth 1 -mtime +3 -type f -delete
 
-domain: <path:secret/data/infra#domain>
+domain: ${INFRA_DOMAIN}
+nfs: ${INFRA_DATA_NFS}

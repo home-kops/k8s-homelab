@@ -1,5 +1,0 @@
-apiVersion: v2
-name: cwa-downloader
-description: Deploy Calibre Web Automated Downloader (deployment, service and ingressroute)
-type: application
-version: 0.1.0
