@@ -63,14 +63,10 @@ repoServer:
   initContainers:
   - name: download-envsubst
     image: ubuntu:latest
-    command: ["sh", "-c"]
+    command: ["sh", "-ce"]
     args:
       - |
-        # Access to 'ar'
-        apt-get update && apt-get install -y binutils curl
-
-        cd /tmp
-        curl -LO http://ftp.us.debian.org
+        apt update && apt download gettext-base
 
         ar x gettext-base_*.deb
         tar -xf data.tar.* ./usr/bin/envsubst
