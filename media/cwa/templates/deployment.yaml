@@ -31,7 +31,7 @@ spec:
         - name: CUSTOM_USER
           valueFrom:
             secretKeyRef:
-              name: ccwa-secreta
+              name: cwa-secret
               key: USER
         - name: CUSTOM_PASSWORD
           valueFrom:
