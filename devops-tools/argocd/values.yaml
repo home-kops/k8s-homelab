@@ -38,6 +38,15 @@ controller:
 
 server:
   replicas: 1
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    tls: true
+
+repoServer:
+  replicas: 1
   rbac:
   - verbs:
     - get
@@ -48,6 +57,10 @@ server:
   envFrom:
   - configMapRef:
       name: infra-config
+  volumes:
+  - name: cmp-plugin
+    configMap:
+      name: argocd-cmp-cm
   extraContainers:
   - name: infra-envsubst
     command: [/var/run/argocd/argocd-cmp-server]
@@ -56,22 +69,17 @@ server:
       runAsNonRoot: true
       runAsUser: 999
     volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
     - mountPath: /home/argocd/cmp-server/config/plugin.yaml
       subPath: infra-envsubst.yaml
       name: cmp-plugin
   automountServiceAccountToken: true
-  ingress:
-    enabled: true
-    ingressClassName: traefik
-    annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    tls: true
-
-repoServer:
-  replicas: 1
 
 applicationSet:
   replicas: 1
 
 global:
-  domain: cd.<path:secret/data/infra#domain>
+  domain: cd.${INFRA_DOMAIN}

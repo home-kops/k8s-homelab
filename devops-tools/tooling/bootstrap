@@ -11,6 +11,7 @@ kubectl apply --server-side -k https://github.com/argoproj/argo-cd/manifests/crd
 
 kubectl create namespace devops-tools || true
 
-kubectl kustomize --enable-helm "${argocd_dir}" | envsubst '${INFRA_DOMAIN} ${ENV}' | kubectl apply --wait -f -
+project_path="$(dirname $0)/.."
+kubectl kustomize --enable-helm "${project_path}/argocd" | envsubst '${INFRA_DOMAIN} ${ENV}' | kubectl apply --wait -f -
 
 echo -e "Done!\n"
