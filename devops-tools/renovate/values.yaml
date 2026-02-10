@@ -15,7 +15,7 @@ ingress:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
   hosts:
-    renovate.<path:secret/data/infra#domain>:
+    renovate.${INFRA_DOMAIN}:
       paths:
       - path: '/'
         pathType: Prefix
