@@ -4,4 +4,4 @@ set -eu
 
 project_path="$(dirname $0)/.."
 
-kubectl kustomize --enable-helm "${project_path}/nfs-sc" | envsubst "${INFRA_K8S_NFS}" | kubectl apply --wait -f -
+kubectl kustomize --enable-helm "${project_path}/nfs-sc" | envsubst '${INFRA_K8S_NFS}' | kubectl apply --wait -f -
