@@ -15,6 +15,10 @@ project_path="$(dirname $0)/.."
 argocd_dir="${project_path}/argocd"
 
 kubectl apply -f "${argocd_dir}/external-secrets.yaml" --wait
-kubectl kustomize --enable-helm "${argocd_dir}" | envsubst '${INFRA_DOMAIN} ${INFRA_ENV}' | kubectl apply --wait -f -
+
+sed -i "s|  domain: cd.\${INFRA_DOMAIN}|${INFRA_DOMAIN}|" "${argocd_dir}/values.yaml"
+sed -i "s|    path: ./${INFRA_ENV}|${INFRA_ENV}|" "${argocd_dir}/application.yaml"
+
+kubectl kustomize --enable-helm "${argocd_dir}" | kubectl apply --wait -f -
 
 echo -e "Done!\n"
