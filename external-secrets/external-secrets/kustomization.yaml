@@ -9,6 +9,8 @@ helmCharts:
   namespace: external-secrets
   valuesInline:
     installCRDs: false
+    genericTargets:
+      enabled: true
 
 resources:
 - secret-store.yaml
