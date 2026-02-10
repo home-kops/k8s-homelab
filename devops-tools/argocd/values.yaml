@@ -9,24 +9,6 @@ configs:
           insecure: true
   secret:
     createSecret: false
-  cmp:
-    create: true
-    plugins:
-      infra-envsubst:
-        generate:
-          command:
-          - bash
-          - "-c"
-          - |
-            set -e
-
-            echo "Replacing env vars in manifests" >&2
-            if [[ -f kustomization.yaml ]]; then
-              kustomize build . --enable-helm | envsubst '${INFRA_DOMAIN} ${INFRA_K8S_NFS} ${INFRA_DATA_NFS} ${INFRA_LB_IP}'
-            else
-              echo "[!] Error during infra variables substitution" >&2
-              exit 1
-            fi
 
 dex:
   enabled: false
