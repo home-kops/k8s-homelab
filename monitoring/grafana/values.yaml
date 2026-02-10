@@ -7,8 +7,8 @@ ingress:
   hosts:
   - grafana.${INFRA_DOMAIN}
 
-adminUser: <path:secret/data/monitoring/grafana#admin_user>
-adminPassword: <path:secret/data/monitoring/grafana#admin_password>
+admin:
+  existingSecret: grafana-secret
 
 datasources:
   datasources.yaml:

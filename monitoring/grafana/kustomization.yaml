@@ -10,3 +10,6 @@ helmCharts:
   valuesFile: values.yaml
   additionalValuesFiles:
   - dashboards/kubernetes.yaml
+
+resources:
+- external-secret.yaml
