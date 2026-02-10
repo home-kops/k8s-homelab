@@ -58,24 +58,28 @@ repoServer:
   - name: cmp-plugin
     configMap:
       name: argocd-cmp-cm
-  - name: envsubst
+  - name: custom-tools
     emptyDir: {}
   initContainers:
   - name: download-envsubst
-    image: debian:stable-slim
-    command: [sh, -c]
+    image: ubuntu:latest
+    command: ["sh", "-c"]
     args:
       - |
-        set -ex
+        # Access to 'ar'
+        apt-get update && apt-get install -y binutils curl
 
-        apt-get update && apt-get download gettext-base
+        cd /tmp
+        curl -LO http://ftp.us.debian.org
+
         ar x gettext-base_*.deb
+        tar -xf data.tar.* ./usr/bin/envsubst
 
-        tar -xvf data.tar.xz ./usr/bin/envsubst
-        mv usr/bin/envsubst /envsubst/envsubst
+        cp usr/bin/envsubst /custom-tools/envsubst
+        chmod +x /custom-tools/envsubst
     volumeMounts:
-    - mountPath: /envsubst
-      name: envsubst
+    - mountPath: /custom-tools
+      name: custom-tools
   extraContainers:
   - name: infra-envsubst
     command: [/var/run/argocd/argocd-cmp-server]
@@ -96,7 +100,7 @@ repoServer:
       name: cmp-plugin
     - mountPath: /usr/local/bin/envsubst
       subPath: envsubst
-      name: envsubst
+      name: custom-tools
   automountServiceAccountToken: true
 
 applicationSet:
