@@ -67,10 +67,11 @@ repoServer:
     args:
       - |
         apt-get update && \
-          apt-get install -y binutils curl && \
-          apt-get download gettext-base
+          apt-get install -y binutils curl
 
-        ar x gettext-base_*.deb
+        wget http://ftp.de.debian.org/debian/pool/main/g/gettext/gettext-base_0.23.2-1_amd64.deb -O gettext.deb
+
+        ar x gettext.deb
         tar -xf data.tar.* ./usr/bin/envsubst
 
         cp usr/bin/envsubst /custom-tools/envsubst
