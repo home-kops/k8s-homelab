@@ -8,3 +8,6 @@ helmCharts:
   releaseName: mend-renovate-ce
   namespace: devops-tools
   valuesFile: values.yaml
+
+resources:
+- external-secret.yaml

@@ -7,12 +7,7 @@ renovate:
         "fileMatch": ["\\.yaml$"]
       }
     }
-  githubComToken: <path:secret/data/devopstools/renovate#githubComToken>
-  mendRnvGithubAppId: <path:secret/data/devopstools/renovate#mendRnvGithubAppId>
-  mendRnvGithubAppKey: <path:secret/data/devopstools/renovate/mendRnvGithubAppKey#private_key>
-  mendRnvLicenseKey: <path:secret/data/devopstools/renovate#mendRnvLicenseKey>
-  mendRnvServerApiSecret: <path:secret/data/devopstools/renovate#mendRnvServerApiSecret>
-  mendRnvWebhookSecret: <path:secret/data/devopstools/renovate#mendRnvWebhookSecret>
+  existingSecret: renovate-secret
   mendRnvCronJobSchedulerAll: '0 * * * *'
 ingress:
   enabled: true
