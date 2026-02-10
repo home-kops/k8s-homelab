@@ -10,4 +10,4 @@ kubectl apply -f "https://raw.githubusercontent.com/external-secrets/external-se
 kubectl create namespace external-secrets || true
 
 # Install ESO
-kubectl kustomize "${project_path}/external-secrets" --enable-helm | kubectl apply -f -
+kubectl kustomize "${project_path}/external-secrets" --enable-helm | kubectl apply --wait -f -
