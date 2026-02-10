@@ -16,8 +16,7 @@ service:
   type: ClusterIP
   port: 8096
 
-domain: <path:secret/data/infra#domain>
-nfs: <path:secret/data/infra#nfs>
+nfs: 192.168.10.100
 
 backup:
   schedule: "0 15 * * *"
@@ -30,3 +29,5 @@ backup:
     echo "Backup completed at $(date)"
     echo "Removing backups older than 3 days"
     find /backup -maxdepth 1 -mtime +3 -type f -delete
+
+domain: <path:secret/data/infra#domain>

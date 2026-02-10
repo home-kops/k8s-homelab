@@ -45,8 +45,6 @@ echo "[3/4] Bootstraping ESO..."
 "${project_path}"/external-secrets/tooling/bootstrap
 echo -e "   ESO ready!\\n"
 
-exit 0
-
 # Install ArgoCD
 echo "[4/4] Bootstraping devops-tools..."
 "${project_path}"/devops-tools/tooling/bootstrap

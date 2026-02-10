@@ -1,6 +1,3 @@
-global:
-  domain: cd.<path:secret/data/infra#domain>
-
 configs:
   params:
     server.insecure: true
@@ -10,15 +7,11 @@ configs:
       config:
         tlsClientConfig:
           insecure: true
-  credentialTemplates:
-    home-kops-credentials:
-      url: https://github.com/home-kops/
-      password: <path:secret/data/devopstools/argocd#gh_org1_password>
-      username: <path:secret/data/devopstools/argocd#gh_org1_username>
   secret:
-    createSecret: true
-    argocdServerAdminPassword: <path:secret/data/devopstools/argocd#admin_password>
-    argocdServerAdminPasswordMtime: "2025-06-15T12:00:00Z"
+    createSecret: false
+
+dex:
+  enabled: false
 
 redis:
   enabled: true
@@ -40,3 +33,6 @@ repoServer:
 
 applicationSet:
   replicas: 1
+
+global:
+  domain: cd.<path:secret/data/infra#domain>

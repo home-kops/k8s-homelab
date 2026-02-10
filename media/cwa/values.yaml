@@ -15,4 +15,4 @@ service:
   port: 8083
 
 domain: <path:secret/data/infra#domain>
-nfs: <path:secret/data/infra#nfs>
+nfs: <path:secret/data/infra#data_nfs>

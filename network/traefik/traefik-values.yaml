@@ -18,7 +18,7 @@ podSecurityContext:
 #  additionalVolumes:
 #  - name: traefik-logs
 #    nfs:
-#      server: <path:secret/data/infra#nfs>
+#      server: <path:secret/data/infra#data_nfs>
 #      path: /volume1/kubernetes/logs/traefik
 #additionalVolumeMounts:
 #- name: traefik-logs
