@@ -38,11 +38,11 @@ repoServer:
     resources:
     - configmaps
   volumes:
-  - name: cmp-plugin
-    configMap:
-      name: argocd-cmp-cm
-  - name: custom-tools
-    emptyDir: {}
+  - configMap:
+      name: infra-envsubst-config
+    name: infra-envsubst-config
+  - emptyDir: {}
+    name: custom-tools
   initContainers:
   - name: download-envsubst
     image: ubuntu:latest
@@ -78,8 +78,8 @@ repoServer:
     - mountPath: /home/argocd/cmp-server/plugins
       name: plugins
     - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-      subPath: infra-envsubst.yaml
-      name: cmp-plugin
+      subPath: plugin.yaml
+      name: infra-envsubst-config
     - mountPath: /usr/local/bin/envsubst
       subPath: envsubst
       name: custom-tools

@@ -1,20 +1,28 @@
-apiVersion: argoproj.io/v1alpha1
-kind: ConfigManagementPlugin
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: infra-envsubst
+  name: infra-envsubst-config
   namespace: devops-tools
-spec:
-  generate:
-    command:
-    - bash
-    - -c
-    - |
-      set -e
-  
-      echo "Replacing env vars in manifests" >&2
-      if [[ -f kustomization.yaml ]]; then
-        kustomize build . --enable-helm | envsubst '${INFRA_DOMAIN} ${INFRA_K8S_NFS} ${INFRA_DATA_NFS} ${INFRA_LB_IP}'
-      else
-        echo "[!] Error during infra variables substitution" >&2
-        exit 1
-      fi
+data:
+  plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: infra-envsubst
+      namespace: devops-tools
+    spec:
+      version: v1.0
+      generate:
+        command:
+        - bash
+        - -c
+        - |
+          set -e
+
+          echo "Replacing env vars in manifests" >&2
+          if [[ -f kustomization.yaml ]]; then
+            kustomize build . --enable-helm | envsubst '${INFRA_DOMAIN} ${INFRA_K8S_NFS} ${INFRA_DATA_NFS} ${INFRA_LB_IP}'
+          else
+            echo "[!] Error during infra variables substitution" >&2
+            exit 1
+          fi
