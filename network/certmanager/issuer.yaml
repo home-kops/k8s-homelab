@@ -2,16 +2,11 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-test
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-    meta.helm.sh/release-name: {{ .Release.Name }}
-    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  namespace: network
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: {{ .Values.letsEncryptEmail }}
+    email: ${INFRA_LETS_ENCRYPT_EMAIL}
     privateKeySecretRef:
       name: letsencrypt-test
     solvers:
@@ -25,18 +20,13 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: letsencrypt-prod
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-    meta.helm.sh/release-name: {{ .Release.Name }}
-    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  namespace: network
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: {{ .Values.letsEncryptEmail }}
+    email: ${INFRA_LETS_ENCRYPT_EMAIL}
     privateKeySecretRef:
-      name: letsencrypt-production
+      name: letsencrypt-prod
     solvers:
     - dns01:
         cloudflare:

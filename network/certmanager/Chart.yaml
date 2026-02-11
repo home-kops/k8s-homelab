@@ -1,5 +1,0 @@
-apiVersion: v2
-name: certmanager
-description: Mod chart for cert-manager with AVP support
-type: application
-version: 0.1.0
