@@ -4,6 +4,8 @@ global:
 
 server:
   enabled: true
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
   livenessProbe:
     enabled: true
     path: /v1/sys/health?standbyok=true&sealedok=true
@@ -44,4 +46,4 @@ server:
   extraEnvironmentVars: {}
 
 injector:
-  enabled: true
+  enabled: false
