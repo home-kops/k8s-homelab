@@ -36,7 +36,7 @@ spec:
                 vault operator unseal "${KEY3}"
             env:
             - name: VAULT_ADDR
-              value: {{ .Values.vault.server }}
+              value: http://vault:8200
             envFrom:
             - secretRef:
                 name: vault-unseal-secret
