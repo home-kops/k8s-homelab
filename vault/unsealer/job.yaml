@@ -4,8 +4,8 @@ metadata:
   name: vault-unseal
   namespace: vault
   annotations:
-    argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
     argocd.argoproj.io/sync-wave: "-2"
 spec:
   ttlSecondsAfterFinished: 360

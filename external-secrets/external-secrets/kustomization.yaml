@@ -10,6 +10,7 @@ helmCharts:
   valuesInline:
     global:
       podAnnotations:
+        argocd.argoproj.io/hook: PreSync
         argocd.argoproj.io/sync-wave: "-1"
     installCRDs: false
     genericTargets:

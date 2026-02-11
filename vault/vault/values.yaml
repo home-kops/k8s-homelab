@@ -5,6 +5,7 @@ global:
 server:
   enabled: true
   annotations:
+    argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/sync-wave: "-2"
   livenessProbe:
     enabled: true
