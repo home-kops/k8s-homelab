@@ -17,22 +17,17 @@ alloy:
         }
       }
 
+      discovery.kubernetes "pod" {
+        role = "pod"
+      }
 
       loki.source.kubernetes "traefik" {
-        namespaces = ["network"]
+        targets = discovery.relabel.pod_logs.output
         labels = {
           app = "traefik"
         }
-
         forward_to = [loki.write.default.receiver]
       }
-  mounts:
-    extra:
-    - name: varlog
-      mountPath: /var/log
-    - name: containers
-      mountPath: /var/log/containers
-      readOnly: true
 controller:
   resources:
     requests:
