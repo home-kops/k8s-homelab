@@ -23,9 +23,6 @@ alloy:
 
       loki.source.kubernetes "traefik" {
         targets = discovery.kubernetes.pod.targets
-        labels = {
-          app = "traefik",
-        }
         forward_to = [loki.write.default.receiver]
       }
 controller:
