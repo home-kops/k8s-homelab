@@ -27,6 +27,9 @@ configs:
             end
           end
           return hs
+    resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
+      jqPathExpressions:
+      - .webhooks[] | select((.name == "validation.istio.io") or .name == "rev.validation.istio.io") | .failurePolicy
 
 dex:
   enabled: false
