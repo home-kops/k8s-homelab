@@ -17,28 +17,17 @@ alloy:
         }
       }
 
-      local.file_match "local_files" {
-        path_targets = [{"__path__" = "/var/log/traefik/traefik.log"}]
-        sync_period = "5s"
-      }
-
-      loki.source.file "traefik_logs" {
-        targets    = local.file_match.local_files.targets
+      loki.source.kubernetes "pods" {
         forward_to = [loki.write.default.receiver]
-        tail_from_end = true
       }
   mounts:
     extra:
-    - name: traefik-logs
-      mountPath: /var/log/traefik
-
+    - name: varlog
+      mountPath: /var/log
+    - name: containers
+      mountPath: /var/log/containers
+      readOnly: true
 controller:
-  volumes:
-    extra:
-    - name: traefik-logs
-      nfs:
-        server: ${INFRA_DATA_NFS}
-        path: /volume1/kubernetes/logs/${INFRA_ENV}/traefik
   resources:
     requests:
       cpu: 100m
