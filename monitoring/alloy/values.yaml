@@ -35,6 +35,36 @@ alloy:
         targets = discovery.kubernetes.traefikPod.targets
         forward_to = [loki.write.default.receiver]
       }
+
+      otelcol.receiver.otlp "default" {
+        grpc {
+          endpoint = "127.0.0.1:4317"
+        }
+
+        http {
+          endpoint = "127.0.0.1:4318"
+        }
+
+        output {
+          metrics = []
+          logs    = []
+          traces  = [otelcol.processor.batch.default.input]
+        }
+      }
+
+      otelcol.processor.batch "default" {
+        output {
+          metrics = []
+          logs    = []
+          traces  = [otelcol.exporter.otlp.default.input]
+        }
+      }
+
+      otelcol.exporter.otlp "default" {
+        client {
+          endpoint = "http://tempo:4317"
+        }
+      }
 controller:
   resources:
     requests:
