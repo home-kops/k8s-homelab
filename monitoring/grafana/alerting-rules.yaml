@@ -3,7 +3,7 @@ alerting:
     apiVersion: 1
     groups:
     - orgId: 1
-      name: Apps
+      name: apps
       folder: infra
       interval: 1d
       rules:
