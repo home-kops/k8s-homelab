@@ -39,9 +39,13 @@ redis:
 
 controller:
   replicas: 1
+  metrics:
+    enabled: true
 
 server:
   replicas: 1
+  metrics:
+    enabled: true
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -51,6 +55,8 @@ server:
 
 repoServer:
   replicas: 1
+  metrics:
+    enabled: true
   rbac:
   - verbs:
     - get
