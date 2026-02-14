@@ -47,6 +47,8 @@ datasources:
 
 dashboards:
   default:
+    argocd:
+      url: https://grafana.com/api/dashboards/14584/revisions/1/download
     traefik_logs:
       url: https://grafana.com/api/dashboards/17347/revisions/9/download
     traefik_metrics:
