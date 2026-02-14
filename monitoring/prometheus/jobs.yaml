@@ -4,3 +4,19 @@ extraScrapeConfigs: |
     scrape_interval: 5s
     static_configs:
     - targets: ['traefik-metrics.network.svc.cluster.local:9100']
+  - job_name: 'argocd-repo-server'
+    metrics_path: /metrics
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['argocd-repo-server-metrics.devops-tools.svc.cluster.local:8084']
+  - job_name: 'argocd-server'
+    metrics_path: /metrics
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['argocd-server-metrics.devops-tools.svc.cluster.local:8083']
+  - job_name: 'argocd-application-controller'
+    metrics_path: /metrics
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['argocd-application-controller-metrics.devops-tools.svc.cluster.local:8082']
+
