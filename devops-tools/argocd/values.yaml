@@ -89,9 +89,6 @@ repoServer:
     resources:
     - configmaps
   volumes:
-  - configMap:
-      name: infra-envsubst-config
-    name: infra-envsubst-config
   - emptyDir: {}
     name: custom-tools
   initContainers:
@@ -129,8 +126,8 @@ repoServer:
     - mountPath: /home/argocd/cmp-server/plugins
       name: plugins
     - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-      subPath: plugin.yaml
-      name: infra-envsubst-config
+      subPath: infra-envsubst.yaml
+      name: infra-envsubst
     - mountPath: /usr/local/bin/envsubst
       subPath: envsubst
       name: custom-tools
