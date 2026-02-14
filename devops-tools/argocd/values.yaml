@@ -30,6 +30,11 @@ configs:
     resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
       jqPathExpressions:
       - .webhooks[] | select((.name == "validation.istio.io") or .name == "rev.validation.istio.io") | .failurePolicy
+    resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
+      jqPathExpressions:
+      - .spec.data[0].remoteRef.conversionStrategy
+      - .spec.data[0].remoteRef.decodingStrategy
+      - .spec.data[0].remoteRef.metadataPolicy
 
 dex:
   enabled: false
