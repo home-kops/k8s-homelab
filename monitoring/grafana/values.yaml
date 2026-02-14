@@ -1,3 +1,7 @@
+grafana.ini:
+  smtp:
+    enabled: true
+
 replicaCount: 1
 ingress:
   enabled: true
