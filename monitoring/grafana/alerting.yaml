@@ -19,4 +19,5 @@ alerting:
           type: email
           settings:
             addresses: ${INFRA_ADMIN_EMAIL}
+            singleEmail: true
           disableResolveMessage: false
