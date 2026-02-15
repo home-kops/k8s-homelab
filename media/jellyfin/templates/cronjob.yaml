@@ -29,5 +29,5 @@ spec:
               claimName: jellyfin-config-pvc
           - name: backup
             nfs:
-              server: {{ .Values.nfs }}
+              server: ${INFRA_DATA_NFS}
               path: /volume1/kubernetes/backup/jellyfin
