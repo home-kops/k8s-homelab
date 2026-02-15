@@ -34,6 +34,8 @@ spec:
           value: "on"
         - name: FIREWALL_OUTBOUND_SUBNETS
           value: "10.42.0.0/15"
+        - name: SERVER_COUNTRIES
+          value: Spain
       - name: verify-vpn
         image: busybox
         command:
