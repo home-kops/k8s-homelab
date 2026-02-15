@@ -1,3 +1,12 @@
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: skip-verify
+  namespace: network
+spec:
+  serverName: kiali.${INFRA_DOMAIN}
+  insecureSkipVerify: true
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -5,7 +14,7 @@ metadata:
   namespace: network
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/service.serverstransport: network-skip-verify@kubernetescrd
+    traefik.ingress.kubernetes.io/service.serverstransport: skip-verify@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:

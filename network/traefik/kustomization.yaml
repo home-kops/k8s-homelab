@@ -8,6 +8,3 @@ helmCharts:
   releaseName: traefik
   namespace: network
   valuesFile: values.yaml
-
-resources:
-- servers-transport.yaml
