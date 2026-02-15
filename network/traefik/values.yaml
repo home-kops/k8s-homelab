@@ -1,6 +1,5 @@
 api:
-  dashboard:
-    enabled: true
+  dashboard: true
 resources:
   requests:
     cpu: 100m
