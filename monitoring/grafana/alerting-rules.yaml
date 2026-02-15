@@ -103,7 +103,7 @@ alerting:
                 type: threshold
           noDataState: NoData
           execErrState: Error
-          for: 1h
+          for: 15m
           annotations: {}
           labels: {}
           isPaused: false
