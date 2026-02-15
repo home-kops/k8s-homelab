@@ -13,13 +13,11 @@ logs:
 podSecurityContext:
   runAsUser: 1000
   runAsGroup: 1000
-#ports:
-#  web:
-#    http:
-#      redirections:
-#        entryPoint:
-#          scheme: https
-#          to: websecure
+ports:
+  web:
+    http:
+      middlewares:
+      - redirect-https@kubernetescrd
 tracing:
   otlp:
     enabled: true

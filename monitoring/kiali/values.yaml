@@ -14,8 +14,8 @@ cr:
         override_yaml:
           metadata:
             annotations:
-              traefik.ingress.kubernetes.io/router.entrypoints: web
+              traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     server:
       web_fqdn: kiali.${INFRA_DOMAIN}
       web_root: /kiali
-      web_schema: http
+      web_schema: https
