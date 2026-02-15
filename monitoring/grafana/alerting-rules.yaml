@@ -5,7 +5,7 @@ alerting:
     - orgId: 1
       name: apps
       folder: infra
-      interval: 1h
+      interval: 15m
       rules:
         - uid: ffd8jyfaxl0qoe
           title: OutOfSync
