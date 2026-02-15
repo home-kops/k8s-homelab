@@ -1,0 +1,9 @@
+qbittorrent:
+  image:
+    repository: msd117/qbittorrent
+    tag: 0.0.5
+
+vpn:
+  image:
+    repository: qmcgaw/gluetun
+    tag: v3.41.0

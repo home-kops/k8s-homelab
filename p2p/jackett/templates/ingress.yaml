@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jackett
+  namespace: p2p
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: jackett.${INFRA_DOMAIN}
+    http:
+      paths:
+      - backend:
+          service:
+            name: jackett
+            port: web
+        path: /
+        pathType: Prefix
