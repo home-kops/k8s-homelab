@@ -1,0 +1,13 @@
+deployment:
+  ingress:
+    class_name: traefik
+    override_yaml:
+      metadata:
+        annotations:
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+cr:
+  create: true
+  namespace: network
+  spec:
+    auth:
+      strategy: "anonymous"

@@ -7,13 +7,4 @@ helmCharts:
   version: 1.30.0
   releaseName: kiali-operator
   namespace: monitoring
-  valuesInline:
-    auth:
-      strategy: anonymous
-    deployment:
-      ingress:
-        class_name: traefik
-        override_yaml:
-          metadata:
-            annotations:
-              traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  valuesFile: values.yaml
