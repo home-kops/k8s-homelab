@@ -6,7 +6,7 @@ namespace: network
 helmCharts:
 - name: base
   repo: https://istio-release.storage.googleapis.com/charts
-  version: 1.28.3
+  version: 1.29.0
   releaseName: istio-base
   valuesInline:
     global:
@@ -30,7 +30,7 @@ helmCharts:
 
 - name: cni
   repo: https://istio-release.storage.googleapis.com/charts
-  version: 1.28.3
+  version: 1.29.0
   releaseName: istio-cni
   valuesInline:
     profile: ambient
