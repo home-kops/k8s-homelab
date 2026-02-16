@@ -51,14 +51,6 @@ dashboards:
   default:
     argocd:
       url: https://grafana.com/api/dashboards/14584/revisions/1/download
-    traefik_logs:
-      url: https://grafana.com/api/dashboards/17347/revisions/9/download
-    traefik_metrics:
-      gnetId: 6293
-      revision: 2
-      datasource:
-      - name: DS_PROMETHEUS
-        value: prometheus
     crowdsec:
       url: https://grafana.com/api/dashboards/21419/revisions/6/download
     falco:
