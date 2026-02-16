@@ -7,16 +7,5 @@ cr:
     external_services:
       prometheus:
         url: "http://prometheus-server.monitoring.svc.cluster.local/"
-    deployment:
-      ingress:
-        enabled: true
-        class_name: traefik
-        override_yaml:
-          metadata:
-            annotations:
-              traefik.ingress.kubernetes.io/router.entrypoints: websecure
-              traefik.ingress.kubernetes.io/router.tls: "true"
     server:
       web_fqdn: kiali.${INFRA_DOMAIN}
-      web_root: "/"
-      web_schema: https

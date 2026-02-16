@@ -9,16 +9,6 @@ renovate:
     }
   existingSecret: renovate-secret
   mendRnvCronJobSchedulerAll: '0 * * * *'
-ingress:
-  enabled: true
-  ingressClassName: traefik
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-  hosts:
-    renovate.${INFRA_DOMAIN}:
-      paths:
-      - path: '/'
-        pathType: Prefix
 resources:
   requests:
     cpu: 250m

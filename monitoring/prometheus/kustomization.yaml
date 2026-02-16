@@ -10,3 +10,6 @@ helmCharts:
   valuesFile: values.yaml
   additionalValuesFiles:
   - jobs.yaml
+
+resources:
+- httproute.yaml

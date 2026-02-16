@@ -10,4 +10,4 @@ helmCharts:
   valuesFile: values.yaml
 
 resources:
-- ingress.yaml
+- httproute.yaml

@@ -14,14 +14,6 @@ server:
       memory: 2Gi
   nodeSelector:
     size: m
-  ingress:
-    enabled: true
-    ingressClassName: traefik
-    annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: websecure
-      traefik.ingress.kubernetes.io/router.tls: "true"
-    hosts:
-    - prometheus.${INFRA_DOMAIN}
 
 alertmanager:
   enabled: false
