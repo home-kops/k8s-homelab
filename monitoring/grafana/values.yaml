@@ -5,14 +5,6 @@ grafana.ini:
     from_address: ${INFRA_NOTIFICATIONS_EMAIL}
 
 replicaCount: 1
-ingress:
-  enabled: true
-  ingressClassName: traefik
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-  hosts:
-  - grafana.${INFRA_DOMAIN}
 
 admin:
   existingSecret: grafana-secret
