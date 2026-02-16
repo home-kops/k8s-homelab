@@ -20,7 +20,9 @@ spec:
     tls:
       mode: Terminate
       certificateRefs:
-      - name: domain-tls-secret
+      - group: ''
+        kind: Secret
+        name: domain-tls-secret
     allowedRoutes:
       namespaces:
         from: All
