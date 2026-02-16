@@ -7,6 +7,7 @@ spec:
   gatewayClassName: istio
   listeners:
   - name: https
+    hostname: ${INFRA_DOMAIN}
     port: 443
     protocol: HTTPS
     tls:
