@@ -9,6 +9,8 @@ spec:
   - name: https
     port: 443
     protocol: HTTPS
+    hosts:
+    - "*.${INFRA_DOMAIN}"
     tls:
       mode: Terminate
       certificateRefs:
