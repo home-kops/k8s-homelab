@@ -7,7 +7,7 @@ spec:
   parentRefs:
   - name: istio-ingressgateway
     namespace: network
-    sectionName: http
+    sectionName: https
   hostnames:
   - "cd.${INFRA_DOMAIN}"
   rules:
