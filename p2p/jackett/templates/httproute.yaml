@@ -12,5 +12,5 @@ spec:
   - "jackett.${INFRA_DOMAIN}"
   rules:
   - backendRefs:
-    - name: jackett-server
+    - name: jackett
       port: 9117
