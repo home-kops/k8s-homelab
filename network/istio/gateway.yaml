@@ -21,8 +21,8 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: devops-tools-waypoint
-  namespace: devops-tools
+  name: cluster-waypoint
+  namespace: network
   labels:
     istio.io/waypoint-for: service
 spec:
