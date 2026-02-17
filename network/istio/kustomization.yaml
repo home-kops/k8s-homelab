@@ -20,8 +20,6 @@ helmCharts:
     profile: ambient
     global:
       istioNamespace: network
-    nodeSelector:
-      role: cp
     tolerations:
     - key: "role"
       operator: "Equal"
