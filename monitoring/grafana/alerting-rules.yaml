@@ -5,10 +5,10 @@ alerting:
     - orgId: 1
       name: apps
       folder: infra
-      interval: 1m
+      interval: 15m
       rules:
-        - uid: cfdir7e7b8h6ob
-          title: ApplicationsHealth
+        - uid: degradedApps
+          title: DegradedApplications
           condition: C
           data:
             - refId: A
@@ -18,7 +18,7 @@ alerting:
               datasourceUid: prometheus
               model:
                 editorMode: builder
-                expr: argocd_app_info{health_status="Healthy", sync_status="Synced"}
+                expr: argocd_app_info{health_status!="Healthy"}
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -58,6 +58,58 @@ alerting:
                 Application: {{ index $labels "name" }}
                 {{- "\n" -}}
                 {{- "\t" -}} · Health: {{ if eq $labels.health_status "Healthy" -}}OK{{ else -}}:x: {{ index $labels "health_status" }}{{- end -}}
+                ` }}
+          labels: {}
+          isPaused: false
+        - uid: outOfSyncApps
+          title: OutOfSyncApplications
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: prometheus
+              model:
+                editorMode: builder
+                expr: argocd_app_info{sync_status!="Synced"}
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: Error
+          annotations:
+            summary: |-
+                {{ `
+                Application: {{ index $labels "name" }}
                 {{- "\n" -}}
                 {{- "\t" -}} · Sync: {{ if eq $labels.sync_status "Synced" -}}OK{{ else -}}:x: {{ index $labels "sync_status" }}{{- end -}}
                 ` }}
