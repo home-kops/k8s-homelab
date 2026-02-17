@@ -58,16 +58,16 @@ alerting:
                 Application: {{ index $labels "name" }}
                 {{- "\n" -}}
                 {{- "\t" -}} · Health: 
-                {{- if eq $labels.health_status "Healthy" -}}
+                {{ if eq $labels.health_status "Healthy" -}}
                 OK
-                {{- else -}}
+                {{ else -}}
                 :x: {{ index $labels "health_status" }}
                 {{- end -}}
                 {{- "\n" -}}
                 {{- "\t" -}} · Sync: 
-                {{- if eq $labels.sync_status "Synced" -}}
+                {{ if eq $labels.sync_status "Synced" -}}
                 OK
-                {{- else -}}
+                {{ else -}}
                 :x: {{ index $labels "sync_status" }}
                 {{- end -}}
                 ` }}
