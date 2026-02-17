@@ -55,7 +55,7 @@ alerting:
           annotations:
             summary: |-
                 {{ `
-                Application: {{ index $labels "name" }}
+                Application: {{ index $labels "name" }}{{- "\n" -}}
                 {{- "\t" -}} · Health status: {{- if eq $labels.health_status "Healthy" -}}
                 OK
                 {{- else -}}
