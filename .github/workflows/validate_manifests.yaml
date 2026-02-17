@@ -25,7 +25,4 @@ jobs:
         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
         webhook-type: incoming-webhook
         payload: |
-          status: "${{ needs.validate-k8s-manifests.result }}"
-          commit: "${{ github.event.head_commit.message }}"
-      env:
-        SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          text: "${{ github.event.head_commit.message }} finished with ${{ needs.validate-k8s-manifests.result }}"
