@@ -13,3 +13,19 @@ concurrency:
 jobs:
   validate-k8s-manifests:
     uses: home-kops/actions/.github/workflows/validate-k8s-manifests.yaml@main
+
+  notify-result:
+    runs-on: ubuntu-latest
+    needs: validate-k8s-manifests
+    if: ${{ always() && github.event_name == 'push' }}
+    steps:
+    - name: Send job result to slack
+      uses: slackapi/slack-github-action@v2.1.1
+      with:
+        webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
+        payload: |
+          status: "${{ needs.validate-k8s-manifests.result }}"
+          commit: "${{ github.event.head_commit.message }}"
+      env:
+        SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
